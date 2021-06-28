@@ -13,6 +13,7 @@ const config: webpack.Configuration = {
 		path: path.resolve( __dirname, 'dist' ),
 		filename: '[name].[contenthash].js',
 		publicPath: '',
+		assetModuleFilename: 'images/[hash][ext]'
 	},
 	module: {
 		rules: [
@@ -33,6 +34,10 @@ const config: webpack.Configuration = {
 			{
 				test: /\.css$/,
 				use: [ 'style-loader', 'css-loader' ]
+			},
+			{
+				test: /\.png/,
+				type: 'asset/resource'
 			}
 		],
 	},

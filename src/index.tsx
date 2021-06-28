@@ -1,17 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
 import '@fortawesome/fontawesome-free/js/fontawesome';
 import '@fortawesome/fontawesome-free/js/regular';
 
+import { Header } from './components/Header';
 import { EncryptArea } from './components/EncryptArea';
 import { DecryptArea } from './components/DecryptArea';
 import { ReelConvertArea } from './components/ReelConverter';
 
+import favicon from './res/favicon/favicon_512.png';
+
 const App: React.FC = () => (
 	<div className='container-fluid'>
-		<Title />
+		<HelmetProvider>
+			<Helmet >
+				<title>Reel Tools</title>
+				<link rel="icon" type="image/x-icon" href={favicon}></link>
+			</Helmet>
+		</HelmetProvider>
+		<Header />
 		<nav>
 			<div className="nav nav-tabs" id="nav-tab" role="tablist">
 				<button className="nav-link active" id="nav-convert-tab" data-bs-toggle="tab" data-bs-target="#nav-convert" type="button" role="tab" aria-controls="nav-convert" aria-selected="true">Convert</button>
@@ -33,13 +43,6 @@ const App: React.FC = () => (
 		</div>
 	</div>
 );
-
-const Title: React.FC = () => {
-	document.title = 'Reel Tools';
-	return <h1 className='text-center'>
-		Reel Tools
-	</h1>
-};
 
 ReactDOM.render(
 	<React.StrictMode>

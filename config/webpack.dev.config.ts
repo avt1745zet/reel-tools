@@ -7,7 +7,7 @@ import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 const config: webpack.Configuration = {
 	mode: 'development',
 	output: {
-		publicPath: '/',
+		publicPath: '/'
 	},
 	entry: './src/index.tsx',
 	module: {
@@ -29,6 +29,10 @@ const config: webpack.Configuration = {
 			{
 				test: /\.css$/,
 				use: [ 'style-loader', 'css-loader' ]
+			},
+			{
+				test: /\.png/,
+				type: 'asset/resource'
 			}
 		],
 	},
