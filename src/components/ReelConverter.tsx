@@ -128,7 +128,7 @@ export const ReelConvertArea: React.FC = () => {
 	const [ isLegalFormat, setIsLegalFormat ] = useState( true );
 	return <form className='col-md-12 col-sm-12'>
 		<label>
-			Encrypt
+			Reel Strips
 		</label>
 		<textarea className='form-control' placeholder={placeholder} rows={15} onChange={( event ) => {
 			const input = event.target.value;
