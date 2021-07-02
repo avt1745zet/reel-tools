@@ -29,12 +29,12 @@ const App: React.FC = () => (
 			</div>
 		</nav>
 		<div className="tab-content" id="nav-tabContent">
-			<div className="tab-pane fade show active" id="nav-convert" role="tabpanel" aria-labelledby="nav-home-tab">
+			<div className="tab-pane fade show active" id="nav-convert" role="tabpanel" aria-labelledby="nav-convert-tab">
 				<div className='row'>
 					<ReelConvertArea />
 				</div>
 			</div>
-			<div className="tab-pane fade row" id="nav-crypto" role="tabpanel" aria-labelledby="nav-profile-tab">
+			<div className="tab-pane fade row" id="nav-crypto" role="tabpanel" aria-labelledby="nav-crypto-tab">
 				<div className='row'>
 					<EncryptArea />
 					<DecryptArea />
