@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CopyButton } from './CopyButton';
 import { CryptoHelper } from './CryptoHelper';
 
 interface ResultProps {
@@ -61,13 +62,9 @@ const Causion: React.FC<CausionProps> = ( props: CausionProps ) => {
 
 const Result: React.FC<ResultProps> = ( props: ResultProps ) => {
 	return <div className='form-group row'>
-		<div className="col-11">
+		<div className='col-11'>
 			<input id='encryptResult' className='form-control' value={props.message} readOnly></input>
 		</div>
-		<button type='button' className='btn btn-light col-1' onClick={() => {
-			const copyText: HTMLInputElement = document.getElementById( 'encryptResult' ) as HTMLInputElement;
-			copyText.select();
-			document.execCommand( "copy" );
-		}}><i className="far fa-copy" aria-hidden="true"></i></button>
+		<CopyButton style='btn btn-light col-1' targetElementId='encryptResult' />
 	</div>
 };

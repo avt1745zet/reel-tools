@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CopyButton } from './CopyButton';
 
 interface ResultProps {
 	message: string;
@@ -174,10 +175,6 @@ const Result: React.FC<ResultProps> = ( props: ResultProps ) => {
 		<div className='col-12'>
 			<textarea id='convertResult' className='form-control' rows={15} value={props.message} readOnly={true}></textarea>
 		</div>
-		<button type='button' className='btn btn-light col-12' onClick={() => {
-			const copyText: HTMLInputElement = document.getElementById( 'convertResult' ) as HTMLInputElement;
-			copyText.select();
-			document.execCommand( 'copy' );
-		}}><i className='far fa-copy' aria-hidden='true'></i></button>
+		<CopyButton style='btn btn-light col-12' targetElementId='convertResult' />
 	</div>
 };
