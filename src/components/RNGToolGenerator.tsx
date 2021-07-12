@@ -3,20 +3,31 @@ import { CopyButton } from './CopyButton';
 
 interface ICheckboxesProps {
 	selectSymbolList: Array<string>;
-	onChange ( output: Array<string> ): void;
+	onChange ( index: number, enabled: boolean ): void;
 }
 
 interface ISelectProps {
 	reelAmount: number;
 	symbolAmount: number;
 	selectSymbolList: Array<string>;
-	onChange ( output: Array<Array<string>> ): void;
+	reelIndexes: Array<Array<string>>;
+	onChange ( posiiton: IVector2, value: string ): void;
+}
+
+interface IResultProps {
+	reelIndexes: Array<Array<string>>;
+}
+
+interface IVector2 {
+	x: number;
+	y: number;
 }
 
 const defaultReelAmount = 5;
 const defaultSymbolAmount = 4;
 
 const defaultSelectChecked = true;
+const defaultSelectIndex = 0;
 const defaultSelectSymbolList: Array<string> = [
 	'PIC1',
 	'PIC2',
@@ -38,7 +49,15 @@ export const RNGToolGenerator: React.FC = () => {
 	const [ reelAmount, setReelAmount ] = useState( defaultReelAmount );
 	const [ symbolAmount, setSymbolAmount ] = useState( defaultSymbolAmount );
 	const [ selectSymbolList, setSelectSymbolList ] = useState( defaultSelectChecked ? defaultSelectSymbolList : new Array<string>() );
-	const [ rngToolCode, setRngToolCode ] = useState( '' );
+	const defaultReelIndexes: Array<Array<string>> = new Array<Array<string>>();
+	for ( let reelIndex = 0; reelIndex < reelAmount; reelIndex++ ) {
+		defaultReelIndexes.push( [] );
+		for ( let symbolIndex = 0; symbolIndex < symbolAmount; symbolIndex++ ) {
+			const symbolName = selectSymbolList[ defaultSelectIndex ];
+			defaultReelIndexes[ reelIndex ].push( symbolName );
+		}
+	}
+	const [ reelIndexes, setReelIndexes ] = useState( defaultReelIndexes );
 
 	return <form className='row'>
 		<label>
@@ -48,47 +67,72 @@ export const RNGToolGenerator: React.FC = () => {
 			<label htmlFor='reelAmountInput' className='col-6'>
 				Reel amount
 			</label>
-			<input id='reelAmountInput' defaultValue={reelAmount} min='1' type='number' className='col-6' onChange={element => {
-				setReelAmount( Number.parseInt( element.target.value ) );
+			<input id='reelAmountInput' defaultValue={reelAmount} min='1' type='number' className='col-6' onChange={event => {
+				const newReelAmount = Number.parseInt( event.target.value );
+				const add = newReelAmount > reelAmount;
+				setReelAmount( newReelAmount );
+
+				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+				if ( add ) {
+					newReelIndexes.push( newReelIndexes[ 0 ].map( () => selectSymbolList[ 0 ] ) );
+				} else {
+					newReelIndexes.splice( newReelIndexes.length - 1 );
+				}
+				setReelIndexes( newReelIndexes );
 			}} />
 		</div>
 		<div className='col-md-6 col-sm-12'>
 			<label htmlFor='symbolAmountInput' className='col-6'>
 				Symbol amount
 			</label>
-			<input id='symbolAmountInput' defaultValue={symbolAmount} min='1' type='number' className='col-6' onChange={element => {
-				setSymbolAmount( Number.parseInt( element.target.value ) );
+			<input id='symbolAmountInput' defaultValue={symbolAmount} min='1' type='number' className='col-6' onChange={event => {
+				const newSymbolAmount = Number.parseInt( event.target.value );
+				const add = newSymbolAmount > symbolAmount;
+				setSymbolAmount( newSymbolAmount );
+
+				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+				if ( add ) {
+					newReelIndexes.forEach( reel => {
+						reel.push( selectSymbolList[ 0 ] );
+					} );
+				} else {
+					newReelIndexes.forEach( reel => {
+						reel.splice( reel.length - 1 );
+					} );
+				}
+				setReelIndexes( newReelIndexes );
 			}} />
 		</div>
 		<div className='col-12'>
-			<Checkboxes selectSymbolList={selectSymbolList} onChange={newList => {
-				setSelectSymbolList( newList );
+			<Checkboxes selectSymbolList={selectSymbolList} onChange={( index, enabled ) => {
+				const newSelectSymbolList: Array<string> = selectSymbolList.slice();
+				if ( enabled ) {
+					newSelectSymbolList.push( defaultSelectSymbolList[ index ] );
+				} else {
+					newSelectSymbolList.splice( newSelectSymbolList.findIndex( symbol => symbol === defaultSelectSymbolList[ index ] ), 1 );
+				}
+				newSelectSymbolList.sort( ( a, b ) =>
+					defaultSelectSymbolList.findIndex( symbol => symbol === a ) - defaultSelectSymbolList.findIndex( symbol => symbol === b ) );
+				setSelectSymbolList( newSelectSymbolList );
+
+				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+				newReelIndexes.forEach( ( reel, reelIndex ) => {
+					reel.forEach( ( symbol, symbolIndex ) => {
+						const isSymbolOutOfRange = !newSelectSymbolList.includes( symbol );
+						if ( isSymbolOutOfRange ) {
+							newReelIndexes[ reelIndex ][ symbolIndex ] = newSelectSymbolList[ 0 ];
+						}
+					} )
+				} );
+				setReelIndexes( newReelIndexes );
 			}} />
 		</div>
-		<SelectsTable reelAmount={reelAmount} symbolAmount={symbolAmount} selectSymbolList={selectSymbolList} onChange={output => {
-			let code = 'rngTool.setRngSpinData([\n[\n';
-			for ( let reelIndex = 0; reelIndex < output.length; reelIndex++ ) {
-				let reelText = '[ ';
-				for ( let symbolIndex = 0; symbolIndex < output[ reelIndex ].length; symbolIndex++ ) {
-					const symbolName: HTMLInputElement = document.getElementById( reelIndex + ',' + symbolIndex ) as HTMLInputElement;
-					reelText = reelText.concat( '"' + symbolName.value + '"' );
-					if ( symbolIndex !== output[ reelIndex ].length - 1 ) {
-						reelText = reelText.concat( ', ' );
-					}
-				}
-				reelText = reelText.concat( ' ]' );
-				if ( reelIndex !== output.length - 1 ) {
-					reelText = reelText.concat( ',\n' );
-				}
-				code = code.concat( reelText );
-			}
-			code = code.concat( '\n]\n]);' )
-			setRngToolCode( code );
+		<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} selectSymbolList={selectSymbolList} onChange={( position, value ) => {
+			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+			newReelIndexes[ position.x ][ position.y ] = value;
+			setReelIndexes( newReelIndexes );
 		}} />
-		<div className='col-12'>
-			<textarea rows={15} id='rngToolResult' className='form-control' value={rngToolCode} readOnly></textarea>
-		</div>
-		<CopyButton style='btn btn-light col-12' targetElementId='rngToolResult' />
+		<Result reelIndexes={reelIndexes}></Result>
 	</form>
 };
 
@@ -97,16 +141,9 @@ const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
 	defaultSelectSymbolList.forEach( ( symbol, index ) => {
 		checkboxes.push(
 			<div key={index} className='col-2'>
-				<input type='checkbox' className='form-check-input' id={'symbolCheckbox' + index} title={symbol} defaultChecked={defaultSelectChecked} onChange={event => {
-					const symbol = event.target.title;
-					const newList = props.selectSymbolList.slice();
-					if ( event.target.checked ) { //* Add
-						newList.push( symbol );
-					} else { //* Remove
-						const index = props.selectSymbolList.findIndex( selectSymbol => selectSymbol === symbol );
-						newList.splice( index, 1 );
-					}
-					props.onChange( newList );
+				<input type='checkbox' className='form-check-input' id={'symbolCheckbox' + index} data-index={index} defaultChecked={defaultSelectChecked} onChange={event => {
+					const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
+					props.onChange( index, event.target.checked );
 				}} />
 				<label key={'symbolCheckbox' + index} className='form-check-label' htmlFor={'symbolCheckbox' + index}>
 					{symbol}
@@ -114,32 +151,31 @@ const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
 			</div>
 		)
 	} );
-	return <div className='row'>{checkboxes}</div>;
+	return <div className='row'>
+		{checkboxes}
+	</div>;
 }
 
 const SelectsTable: React.FC<ISelectProps> = ( props: ISelectProps ) => {
-	const trs: Array<JSX.Element> = []
+	const trs: Array<JSX.Element> = [];
 	for ( let symbolIndex = 0; symbolIndex < props.symbolAmount; symbolIndex++ ) {
-		const tds: Array<JSX.Element> = []
+		const tds: Array<JSX.Element> = [];
 		for ( let reelIndex = 0; reelIndex < props.reelAmount; reelIndex++ ) {
 			const options: Array<JSX.Element> = [];
 			props.selectSymbolList.forEach( symbol => {
 				options.push(
 					<option key={symbol} value={symbol}>{symbol}</option>
-				)
+				);
 			} )
 			tds.push(
-				<td key={'r' + reelIndex} className='col-1'>
-					<select className='form-select' id={reelIndex + ',' + symbolIndex} onChange={() => {
-						const output: Array<Array<string>> = [];
-						for ( let reelIndex = 0; reelIndex < props.reelAmount; reelIndex++ ) {
-							output.push( [] );
-							for ( let symbolIndex = 0; symbolIndex < props.symbolAmount; symbolIndex++ ) {
-								const symbolName: HTMLInputElement = document.getElementById( reelIndex + ',' + symbolIndex ) as HTMLInputElement;
-								output[ reelIndex ].push( symbolName.value );
-							}
-						}
-						props.onChange( output );
+				<td key={'r' + reelIndex} >
+					<select value={props.reelIndexes[ reelIndex ][ symbolIndex ]} className='form-select' data-reelindex={reelIndex} data-symbolindex={symbolIndex} onChange={event => {
+						const position: IVector2 = {
+							x: event.target.dataset.reelindex ? Number.parseInt( event.target.dataset.reelindex ) : 0,
+							y: event.target.dataset.symbolindex ? Number.parseInt( event.target.dataset.symbolindex ) : 0
+						};
+						const symbol: string = event.target.value;
+						props.onChange( position, symbol );
 					}}>
 						{options}
 					</select>
@@ -153,10 +189,38 @@ const SelectsTable: React.FC<ISelectProps> = ( props: ISelectProps ) => {
 		);
 	}
 	return <div className='col-12'>
-		<table className='col-12'>
+		<table className='container-fluid'>
 			<tbody>
 				{trs}
 			</tbody>
 		</table>
 	</div>;
+}
+
+const Result: React.FC<IResultProps> = ( props: IResultProps ) => {
+	let code = 'rngTool.setRngSpinData([\n[\n';
+	for ( let reelIndex = 0; reelIndex < props.reelIndexes.length; reelIndex++ ) {
+		let reelText = '[ ';
+		for ( let symbolIndex = 0; symbolIndex < props.reelIndexes[ reelIndex ].length; symbolIndex++ ) {
+			const symbol = props.reelIndexes[ reelIndex ][ symbolIndex ];
+			reelText = reelText.concat( '"' + symbol + '"' );
+			if ( symbolIndex !== props.reelIndexes[ reelIndex ].length - 1 ) {
+				reelText = reelText.concat( ', ' );
+			}
+		}
+		reelText = reelText.concat( ' ]' );
+		if ( reelIndex !== props.reelIndexes.length - 1 ) {
+			reelText = reelText.concat( ',\n' );
+		}
+		code = code.concat( reelText );
+	}
+	code = code.concat( '\n]\n]);' );
+	return <div className='col-12'>
+		<div className='form-group row'>
+			<div className='col-12'>
+				<textarea rows={15} id='rngToolResult' className='form-control' value={code} readOnly></textarea>
+			</div>
+			<CopyButton style='btn btn-light col-12' targetElementId='rngToolResult' />
+		</div>
+	</div>
 }
