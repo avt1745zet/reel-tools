@@ -22,7 +22,7 @@ const Title: React.FC = () => {
 };
 
 const Version: React.FC = () => {
-	return <div className='text-md-end text-sm-center'>
+	return <div className='text-center text-md-end'>
 		Version: {packageJson.version}
 	</div>
 };
