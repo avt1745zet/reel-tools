@@ -100,7 +100,7 @@ export const RNGToolGenerator: React.FC = () => {
 	const [ symbolAmount, setSymbolAmount ] = useState( defaultSymbolAmount );
 
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
-	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( new Array<ISelectStatu>() );
+	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
 	const defaultAvailableSymbolList: Array<string> = new Array<string>();
 	defaultSelectOptionList.forEach( selectOption => {
@@ -261,12 +261,12 @@ const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
 	const originalCheckboxes: Array<JSX.Element> = props.originalSelectOptionList.map( ( selectOption, index ) => {
 		const checked = selectOption.checked;
 		const symbol = selectOption.symbol;
-		return <div key={index} className='col-2'>
-			<input type='checkbox' className='form-check-input' id={'symbolCheckbox' + index} data-index={index} checked={checked} onChange={event => {
+		return <div key={index} className='col-6 col-sm-4 col-md-3 col-lg-2 mb-1'>
+			<input key='checkbox' type='checkbox' className='form-check-input' id={'symbolCheckbox' + index} data-index={index} checked={checked} onChange={event => {
 				const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
 				props.onOriginalCheckedChange( index, event.target.checked );
 			}} />
-			<label key={'symbolCheckbox' + index} className='form-check-label' htmlFor={'symbolCheckbox' + index}>
+			<label key='label' className='form-check-label ms-1' htmlFor={'symbolCheckbox' + index}>
 				{symbol}
 			</label>
 		</div>
@@ -275,15 +275,32 @@ const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
 	const customCheckboxes: Array<JSX.Element> = props.customSelectOptionList.map( ( selectOption, index ) => {
 		const checked = selectOption.checked;
 		const symbol = selectOption.symbol;
-		return <div key={'custom' + index} className='col-2'>
+
+		const inputElements: Array<JSX.Element> = [];
+
+		const checkbox: JSX.Element = <input key='checkbox' type='checkbox' className='form-check-input' data-index={index} checked={checked} onChange={event => {
+			const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
+			props.onCustomCheckedChange( index, event.target.checked );
+		}} />;
+
+		const inputFiled: JSX.Element = <input key='inputFiled' className='form-control ms-1' placeholder='Define custom symbol...' value={symbol} onChange={event => {
+			props.onCustomSymbolChange( index, event.target.value );
+		}} />;
+
+		inputElements.push( checkbox );
+		inputElements.push( inputFiled );
+
+		if ( index === props.customSelectOptionList.length - 1 ) {
+			const addButton: JSX.Element = <button key='addButton' type='button' className='btn col-1' title='Apply custom symbol' onClick={() => {
+				props.onCustomCheckedChange( index, true );
+				props.onAddNewCustomSymbol( '', false );
+			}} disabled={props.customSelectOptionList[ props.customSelectOptionList.length - 1 ].symbol === ''} ><i className='fas fa-plus' aria-hidden='true'></i></button>;
+			inputElements.push( addButton );
+		}
+
+		return <div key={'custom' + index} className='col-6 col-sm-4 col-md-3 col-lg-2 mb-1'>
 			<div className='input-group'>
-				<input type='checkbox' className='form-check-input' data-index={index} checked={checked} onChange={event => {
-					const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
-					props.onCustomCheckedChange( index, event.target.checked );
-				}} />
-				<input key={'symbolCheckbox' + index} className='form-control' value={symbol} onChange={event => {
-					props.onCustomSymbolChange( index, event.target.value );
-				}} />
+				{inputElements}
 			</div>
 		</div>
 	} );
@@ -291,9 +308,6 @@ const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
 	return <div className='row'>
 		{originalCheckboxes}
 		{customCheckboxes}
-		<button type='button' className='btn col-1' title='Apply custom symbol' onClick={() => {
-			props.onAddNewCustomSymbol( '', true );
-		}}><i className='fas fa-plus' aria-hidden='true'></i></button>
 	</div>;
 }
 
