@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { FC, Fragment, useState } from 'react';
+import { createStyles, Divider, makeStyles, TextField, Typography } from '@material-ui/core';
 import { CopyButton } from './CopyButton';
 
 interface ResultProps {
@@ -124,57 +125,112 @@ PIC3	PIC3	A
 PIC3	PIC3
 PIC3	PIC3`;
 
-export const ReelConvertArea: React.FC = () => {
+const useStyles = makeStyles( () =>
+	createStyles( {
+		root: {
+			width: '100%'
+		},
+		divider: {
+			marginBlock: '30px',
+			height: 0
+		}
+	} )
+);
+
+export const ReelConvertArea: FC = () => {
 	const [ convertString, setConvertString ] = useState( '' );
 	const [ isLegalFormat, setIsLegalFormat ] = useState( true );
-	return <form className='col-md-12 col-sm-12'>
-		<label>
-			Reel Strips
-		</label>
-		<textarea className='form-control' placeholder={placeholder} rows={15} onChange={( event ) => {
-			const input = event.target.value;
-			try {
-				if ( !input ) {
-					setConvertString( '' );
-				}
 
-				const lines: Array<string> = input.split( '\n' );
-				const reelCount: number = lines[ 0 ].split( '\t' ).length;
-				const converted: Array<Array<string>> = [];
-				for ( let col = 0; col < reelCount; col++ ) {
-					const convertedReel: Array<string> = [];
-					lines.forEach( function ( row ) {
-						const symbols = row.split( '\t' );
-						if ( col < symbols.length && symbols[ col ].trim().length > 0 ) {
-							convertedReel.push( symbols[ col ].trim() );
+	const classes = useStyles();
+
+	return (
+		<form className={classes.root} >
+			<TextField
+				fullWidth
+				multiline
+				rows={15}
+				InputLabelProps={{
+					shrink: true,
+				}}
+				label='Reel Strips'
+				placeholder={placeholder}
+				onChange={( event ) => {
+					const input = event.target.value;
+					try {
+						if ( !input ) {
+							setConvertString( '' );
 						}
-					} );
-					converted.push( convertedReel );
-				}
-				setConvertString( JSON.stringify( converted, null, 2 ) );
-				setIsLegalFormat( true );
-			} catch ( err ) {
-				setIsLegalFormat( false );
-			}
-		}}></textarea>
-		<Causion isLegalFormat={isLegalFormat} />
-		<Result message={convertString} />
-	</form>
+
+						const lines: Array<string> = input.split( '\n' );
+						const reelCount: number = lines[ 0 ].split( '\t' ).length;
+						const converted: Array<Array<string>> = [];
+						for ( let col = 0; col < reelCount; col++ ) {
+							const convertedReel: Array<string> = [];
+							lines.forEach( function ( row ) {
+								const symbols = row.split( '\t' );
+								if ( col < symbols.length && symbols[ col ].trim().length > 0 ) {
+									convertedReel.push( symbols[ col ].trim() );
+								}
+							} );
+							converted.push( convertedReel );
+						}
+						setConvertString( JSON.stringify( converted, null, 2 ) );
+						setIsLegalFormat( true );
+					} catch ( err ) {
+						setIsLegalFormat( false );
+					}
+				}}
+			/>
+			<Causion isLegalFormat={isLegalFormat} />
+			<Divider className={classes.divider} />
+			<Result message={convertString} />
+		</form>
+	);
 };
 
-const Causion: React.FC<CausionProps> = ( props: CausionProps ) => {
-	if ( !props.isLegalFormat ) {
-		return <p className='text-danger'>.json format is illegal!</p>
+const Causion: FC<CausionProps> = ( props: CausionProps ) => {
+	const { isLegalFormat } = props;
+
+	if ( !isLegalFormat ) {
+		return (
+			<Typography
+				color='error'
+				variant={'body1'}
+			>
+				Reel strips format is illegal!
+			</Typography >
+		);
 	} else {
-		return null;
+		return <Fragment></Fragment>;
 	}
 };
 
-const Result: React.FC<ResultProps> = ( props: ResultProps ) => {
-	return <div className='form-group row'>
-		<div className='col-12'>
-			<textarea id='convertResult' className='form-control' rows={15} value={props.message} readOnly={true}></textarea>
-		</div>
-		<CopyButton style='btn btn-light col-12' targetElementId='convertResult' />
-	</div>
+const Result: FC<ResultProps> = ( props: ResultProps ) => {
+	const { message } = props;
+
+	return (
+		<React.Fragment>
+			<TextField
+				fullWidth
+				multiline
+				rows={15}
+				inputProps={{ readOnly: true }}
+				label='Convert result'
+				value={message}
+				id='convertResult'
+
+			/>
+			<CopyButton
+				buttonProps={{
+					fullWidth: true,
+					size: 'large',
+					color: 'primary',
+					variant: 'contained'
+				}}
+				targetElementId='convertResult'
+			>
+				Copy result
+			</CopyButton>
+		</React.Fragment>
+	);
 };

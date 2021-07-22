@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { FC, Fragment, useState } from 'react';
+import { Box, Button, createStyles, makeStyles, TextField, Typography } from '@material-ui/core';
 import { CopyButton } from './CopyButton';
 import { CryptoHelper } from './CryptoHelper';
 
@@ -12,49 +13,94 @@ interface CausionProps {
 
 let decryptText = '';
 
-export const DecryptArea: React.FC = () => {
+const useStyles = makeStyles( () =>
+	createStyles( {
+		root: {
+			width: '100%'
+		}
+	} )
+);
+
+export const DecryptArea: FC = () => {
 	const [ message, setMessage ] = useState( '' );
 	const [ isLegalFormat, setIsLegalFormat ] = useState( true );
-	return <form className='col-md-6 col-sm-12'>
-		<label>
-			Decrypt
-		</label>
-		<input id='decryptInput' className='form-control' placeholder='Enter any encrypt string' onChange={( event ) => {
-			decryptText = event.target.value;
-		}}></input>
-		<button type='button' className='btn btn-primary col-12' onClick={() => {
-			try {
-				const decryptObject = CryptoHelper.decrypt<JSON>( decryptText );
-				if ( decryptObject ) {
-					setMessage( JSON.stringify( decryptObject ) );
-					setIsLegalFormat( true );
-				} else {
+
+	const classes = useStyles();
+	return <form className={classes.root} >
+		<TextField
+			fullWidth
+			InputLabelProps={{
+				shrink: true,
+			}}
+			label='Decrypt'
+			placeholder='Enter any encrypt string'
+			onChange={( event ) => {
+				decryptText = event.target.value;
+			}}
+		/>
+		<Button
+			fullWidth
+			color='primary'
+			variant='contained'
+			onClick={() => {
+				try {
+					const decryptObject = CryptoHelper.decrypt<JSON>( decryptText );
+					if ( decryptObject ) {
+						setMessage( JSON.stringify( decryptObject ) );
+						setIsLegalFormat( true );
+					} else {
+						setMessage( '' );
+						setIsLegalFormat( false );
+					}
+				} catch {
 					setMessage( '' );
 					setIsLegalFormat( false );
 				}
-			} catch {
-				setMessage( '' );
-				setIsLegalFormat( false );
-			}
-		}}> Start Decrypt </button >
+			}}>
+			Start Decrypt
+		</Button>
 		<Causion isLegalFormat={isLegalFormat} />
 		<Result message={message} />
 	</form>
 };
 
-const Causion: React.FC<CausionProps> = ( props: CausionProps ) => {
-	if ( !props.isLegalFormat ) {
-		return <p className='text-danger'>Your format of input encrypted text is not correct!!</p>
+const Causion: FC<CausionProps> = ( props: CausionProps ) => {
+	const { isLegalFormat } = props;
+
+	if ( !isLegalFormat ) {
+		return (
+			<Typography
+				color='error'
+				variant='body1'
+			>
+				Your format of input encrypted text is not correct!!
+			</Typography >
+		);
 	} else {
-		return null;
+		return <Fragment></Fragment>;
 	}
 };
 
-const Result: React.FC<ResultProps> = ( props: ResultProps ) => {
-	return <div className='form-group row'>
-		<div className='col-11'>
-			<input id='decryptResult' className='form-control' value={props.message} readOnly></input>
-		</div>
-		<CopyButton style='btn btn-light col-1' targetElementId='decryptResult' />
-	</div>
+const Result: FC<ResultProps> = ( props: ResultProps ) => {
+	const { message } = props;
+
+	return (
+		<Box display='flex'>
+			<TextField
+				fullWidth
+				inputProps={{ readOnly: true }}
+				id='decryptResult'
+				value={message}
+			/>
+			<CopyButton
+				buttonProps={{
+					fullWidth: true,
+					size: 'large',
+					color: 'primary',
+					variant: 'contained'
+				}}
+				targetElementId='decryptResult'
+			/>
+		</Box>
+	)
 }
