@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { FC, ReactElement, useState } from 'react';
+import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField } from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
 import { CopyButton } from './CopyButton';
 
-interface ICheckboxesProps {
+interface CheckboxesProps {
 	originalSelectOptionList: Array<ISelectStatu>;
 	customSelectOptionList: Array<ISelectStatu>;
 	onOriginalCheckedChange ( index: number, checked: boolean ): void;
@@ -10,7 +12,7 @@ interface ICheckboxesProps {
 	onAddNewCustomSymbol ( symbolName: string, defaultChecked: boolean ): void;
 }
 
-interface ISelectTableProps {
+interface SelectTableProps {
 	reelAmount: number;
 	symbolAmount: number;
 	availableSymbolList: Array<string>;
@@ -18,7 +20,7 @@ interface ISelectTableProps {
 	onChange ( posiiton: IVector2, value: string ): void;
 }
 
-interface IResultProps {
+interface ResultProps {
 	reelIndexes: Array<Array<string>>;
 }
 
@@ -95,7 +97,22 @@ const defaultSelectOptionList: Array<ISelectStatu> = [
 	}
 ]
 
-export const RNGToolGenerator: React.FC = () => {
+const useStyles = makeStyles( () =>
+	createStyles( {
+		root: {
+			width: '100%'
+		},
+		formControlLabelWithAddButton: {
+			marginRight: '0px'
+		},
+		divider: {
+			marginBlock: '10px',
+			height: 0
+		}
+	} ),
+);
+
+export const RNGToolGenerator: FC = () => {
 	const [ reelAmount, setReelAmount ] = useState( defaultReelAmount );
 	const [ symbolAmount, setSymbolAmount ] = useState( defaultSymbolAmount );
 
@@ -120,59 +137,51 @@ export const RNGToolGenerator: React.FC = () => {
 	}
 	const [ reelIndexes, setReelIndexes ] = useState( defaultReelIndexes );
 
-	return <form className='row'>
-		<label>
-			Generator
-		</label>
-		<div className='col-12'>
-			<div className='row'>
-				<div className='col-md-3 col-sm-6'>
-					<label htmlFor='reelAmountInput'>
-						Reel amount
-					</label>
-				</div>
-				<div className='col-md-3 col-sm-6'>
-					<input id='reelAmountInput' defaultValue={reelAmount} min='1' type='number' className='form-control' onChange={event => {
+	const classes = useStyles();
+
+	return (
+		<form className={classes.root} >
+			<Grid container spacing={2}>
+				<Grid item xs={12} md={6}>
+					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={( event ) => {
 						const newReelAmount = Number.parseInt( event.target.value );
-						const add = newReelAmount > reelAmount;
-						setReelAmount( newReelAmount );
+						if ( isPositiveInteger( newReelAmount ) ) {
+							const add = newReelAmount > reelAmount;
+							setReelAmount( newReelAmount );
 
-						const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-						if ( add ) {
-							newReelIndexes.push( newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] ) );
-						} else {
-							newReelIndexes.splice( newReelIndexes.length - 1 );
+							const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+							if ( add ) {
+								newReelIndexes.push( newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] ) );
+							} else {
+								newReelIndexes.splice( newReelIndexes.length - 1 );
+							}
+							setReelIndexes( newReelIndexes );
 						}
-						setReelIndexes( newReelIndexes );
 					}} />
-				</div>
-				<div className='col-md-3 col-sm-6'>
-					<label htmlFor='symbolAmountInput'>
-						Row amount
-					</label>
-				</div>
-				<div className='col-md-3 col-sm-6'>
-					<input id='symbolAmountInput' defaultValue={symbolAmount} min='1' type='number' className='form-control' onChange={event => {
+				</Grid>
+				<Grid item xs={12} md={6}>
+					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={( event ) => {
 						const newSymbolAmount = Number.parseInt( event.target.value );
-						const add = newSymbolAmount > symbolAmount;
-						setSymbolAmount( newSymbolAmount );
+						if ( isPositiveInteger( newSymbolAmount ) ) {
+							const add = newSymbolAmount > symbolAmount;
+							setSymbolAmount( newSymbolAmount );
 
-						const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-						if ( add ) {
-							newReelIndexes.forEach( reel => {
-								reel.push( availableSymbolList[ 0 ] );
-							} );
-						} else {
-							newReelIndexes.forEach( reel => {
-								reel.splice( reel.length - 1 );
-							} );
+							const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+							if ( add ) {
+								newReelIndexes.forEach( reel => {
+									reel.push( availableSymbolList[ 0 ] );
+								} );
+							} else {
+								newReelIndexes.forEach( reel => {
+									reel.splice( reel.length - 1 );
+								} );
+							}
+							setReelIndexes( newReelIndexes );
 						}
-						setReelIndexes( newReelIndexes );
 					}} />
-				</div>
-			</div>
-		</div>
-		<div className='col-12'>
+				</Grid>
+			</Grid>
+			<Divider className={classes.divider} />
 			<Checkboxes originalSelectOptionList={originalSelectOptionList} customSelectOptionList={customSelectOptionList}
 				onOriginalCheckedChange={( index, checked ) => {
 					const newOriginalSelectOptionList: Array<ISelectStatu> = originalSelectOptionList.slice();
@@ -213,7 +222,8 @@ export const RNGToolGenerator: React.FC = () => {
 				}} onCustomSymbolChange={( index, newSymbolName ) => {
 					newSymbolName = newSymbolName.toUpperCase();
 					const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
-					newCustomSelectOptionList[ index ] = { symbol: newSymbolName, checked: newCustomSelectOptionList[ index ].checked };
+					const newChecked = newSymbolName === '' ? false : newCustomSelectOptionList[ index ].checked;
+					newCustomSelectOptionList[ index ] = { symbol: newSymbolName, checked: newChecked };
 					setCustomSelectOptionList( newCustomSelectOptionList );
 
 					const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
@@ -237,15 +247,22 @@ export const RNGToolGenerator: React.FC = () => {
 					const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
 					setAvailableSymbolList( newSelectSymbolList )
 				}} />
-		</div>
-		<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
-			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-			newReelIndexes[ position.x ][ position.y ] = value;
-			setReelIndexes( newReelIndexes );
-		}} />
-		<Result reelIndexes={reelIndexes}></Result>
-	</form>
+			<Divider className={classes.divider} />
+			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
+				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+				newReelIndexes[ position.x ][ position.y ] = value;
+				setReelIndexes( newReelIndexes );
+			}} />
+			<Divider className={classes.divider} />
+			<Result reelIndexes={reelIndexes}></Result>
+		</form>
+	);
 };
+
+function isPositiveInteger ( value: number ): boolean {
+	const result: boolean = Number.isInteger( value ) && value > 0 ? true : false;
+	return result;
+}
 
 function getCheckedSymbol ( options: Array<ISelectStatu> ): Array<string> {
 	const result: Array<string> = new Array<string>();
@@ -257,125 +274,185 @@ function getCheckedSymbol ( options: Array<ISelectStatu> ): Array<string> {
 	return result;
 }
 
-const Checkboxes: React.FC<ICheckboxesProps> = ( props: ICheckboxesProps ) => {
-	const originalCheckboxes: Array<JSX.Element> = props.originalSelectOptionList.map( ( selectOption, index ) => {
-		const checked = selectOption.checked;
-		const symbol = selectOption.symbol;
-		return <div key={index} className='col-6 col-sm-4 col-md-3 col-lg-2 mb-1'>
-			<input key='checkbox' type='checkbox' className='form-check-input' id={'symbolCheckbox' + index} data-index={index} checked={checked} onChange={event => {
-				const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
-				props.onOriginalCheckedChange( index, event.target.checked );
-			}} />
-			<label key='label' className='form-check-label ms-1' htmlFor={'symbolCheckbox' + index}>
-				{symbol}
-			</label>
-		</div>
-	} );
+const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
+	const { originalSelectOptionList, customSelectOptionList, onOriginalCheckedChange, onCustomCheckedChange, onCustomSymbolChange, onAddNewCustomSymbol } = props;
 
-	const customCheckboxes: Array<JSX.Element> = props.customSelectOptionList.map( ( selectOption, index ) => {
+	const classes = useStyles();
+
+	const originalCheckboxes: Array<ReactElement> = originalSelectOptionList.map( ( selectOption, index ) => {
 		const checked = selectOption.checked;
 		const symbol = selectOption.symbol;
 
-		const inputElements: Array<JSX.Element> = [];
+		const handleCheckboxChange = ( index: number ) => ( event: React.ChangeEvent<HTMLInputElement>, checked: boolean ) => {
+			onOriginalCheckedChange( index, checked );
+		};
 
-		const checkbox: JSX.Element = <input key='checkbox' type='checkbox' className='form-check-input' data-index={index} checked={checked} onChange={event => {
-			const index = event.target.dataset.index ? Number.parseInt( event.target.dataset.index ) : 0;
-			props.onCustomCheckedChange( index, event.target.checked );
-		}} />;
-
-		const inputFiled: JSX.Element = <input key='inputFiled' className='form-control ms-1' placeholder='Define custom symbol...' value={symbol} onChange={event => {
-			props.onCustomSymbolChange( index, event.target.value );
-		}} />;
-
-		inputElements.push( checkbox );
-		inputElements.push( inputFiled );
-
-		if ( index === props.customSelectOptionList.length - 1 ) {
-			const addButton: JSX.Element = <button key='addButton' type='button' className='btn col-1' title='Apply custom symbol' onClick={() => {
-				props.onCustomCheckedChange( index, true );
-				props.onAddNewCustomSymbol( '', false );
-			}} disabled={props.customSelectOptionList[ props.customSelectOptionList.length - 1 ].symbol === ''} ><i className='fas fa-plus' aria-hidden='true'></i></button>;
-			inputElements.push( addButton );
-		}
-
-		return <div key={'custom' + index} className='col-6 col-sm-4 col-md-3 col-lg-2 mb-1'>
-			<div className='input-group'>
-				{inputElements}
-			</div>
-		</div>
+		return (
+			<Grid item key={index} xs={6} sm={4} md={3} lg={2}>
+				<FormControlLabel
+					control={<Checkbox color='primary' checked={checked} onChange={( handleCheckboxChange( index ) )} />}
+					label={symbol}
+				/>
+			</Grid>
+		)
 	} );
 
-	return <div className='row'>
+	const customCheckboxes: Array<ReactElement> = customSelectOptionList.map( ( selectOption, index ) => {
+		const checked = selectOption.checked;
+		const symbol = selectOption.symbol;
+
+		const handleCheckboxChange = ( index: number ) => ( event: React.ChangeEvent<HTMLInputElement>, checked: boolean ) => {
+			onCustomCheckedChange( index, checked );
+		};
+
+		const checkbox: ReactElement =
+			<Checkbox
+				key='checkbox'
+				color='primary'
+				checked={checked}
+				onChange={handleCheckboxChange( index )}
+				disabled={symbol === ''}
+			/>;
+
+		const textField: ReactElement = <Box sx={{ display: 'inline-flex' }} >
+			<TextField
+				key='textField'
+				label="Custom symbol"
+				placeholder='Define symbol...'
+				value={symbol}
+				onChange={event => {
+					onCustomSymbolChange( index, event.target.value );
+				}}
+			/>
+		</Box>
+
+		const isLastOption: boolean = index === customSelectOptionList.length - 1;
+
+		const elements: ReactElement = isLastOption ?
+			<React.Fragment>
+				<FormControlLabel
+					className={classes.formControlLabelWithAddButton}
+					control={checkbox}
+					label={textField}
+				/>
+				<IconButton
+					onClick={() => {
+						onCustomCheckedChange( index, true );
+						onAddNewCustomSymbol( '', false );
+					}}
+					disabled={customSelectOptionList[ customSelectOptionList.length - 1 ].symbol === ''}
+				>
+					<AddIcon />
+				</IconButton>
+			</React.Fragment> :
+			<FormControlLabel
+				control={checkbox}
+				label={textField}
+			/>;
+
+		return (
+			<Grid item key={'custom' + index} xs={6} sm={4} md={3} lg={2}>
+				<Box justifyContent='space-between' width='100%' display='inline-flex'>
+					{elements}
+				</Box>
+			</Grid>
+		)
+	} );
+
+	return <Grid container>
 		{originalCheckboxes}
 		{customCheckboxes}
-	</div>;
+	</Grid>;
 }
 
-const SelectsTable: React.FC<ISelectTableProps> = ( props: ISelectTableProps ) => {
-	const trs: Array<JSX.Element> = [];
-	for ( let symbolIndex = 0; symbolIndex < props.symbolAmount; symbolIndex++ ) {
-		const tds: Array<JSX.Element> = [];
-		for ( let reelIndex = 0; reelIndex < props.reelAmount; reelIndex++ ) {
-			const options: Array<JSX.Element> = [];
-			props.availableSymbolList.forEach( ( symbol, index ) => {
+const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
+	const { reelAmount, symbolAmount, availableSymbolList, reelIndexes, onChange } = props;
+
+	const tableElements: Array<ReactElement> = [];
+	for ( let symbolIndex = 0; symbolIndex < symbolAmount; symbolIndex++ ) {
+		const rowElements: Array<ReactElement> = [];
+		for ( let reelIndex = 0; reelIndex < reelAmount; reelIndex++ ) {
+			const options: Array<ReactElement> = [];
+			availableSymbolList.forEach( ( symbol, index ) => {
 				options.push(
-					<option key={index} value={symbol}>{symbol}</option>
+					<MenuItem key={index} value={symbol}>{symbol}</MenuItem>
 				);
 			} )
-			tds.push(
-				<td key={'r' + reelIndex} >
-					<select value={props.reelIndexes[ reelIndex ][ symbolIndex ]} className='form-select' data-reelindex={reelIndex} data-symbolindex={symbolIndex} onChange={event => {
-						const position: IVector2 = {
-							x: event.target.dataset.reelindex ? Number.parseInt( event.target.dataset.reelindex ) : 0,
-							y: event.target.dataset.symbolindex ? Number.parseInt( event.target.dataset.symbolindex ) : 0
-						};
-						const symbol: string = event.target.value;
-						props.onChange( position, symbol );
-					}}>
-						{options}
-					</select>
-				</td>
-			)
+			const handleSelectChange = ( position: IVector2 ) => ( event: React.ChangeEvent<{
+				name?: string | undefined;
+				value: unknown;
+			}> ) => {
+				const symbol: string = event.target.value as string;
+				onChange( position, symbol );
+			};
+			rowElements.push(
+				<Grid item xs key={reelIndex}>
+					<FormControl style={{ width: '100%' }}>
+						<Select
+							value={reelIndexes[ reelIndex ][ symbolIndex ]}
+							onChange={handleSelectChange( { x: reelIndex, y: symbolIndex } )}
+						>
+							{options}
+						</Select>
+					</FormControl>
+				</Grid>
+			);
 		}
-		trs.push(
-			<tr key={'s' + symbolIndex}>
-				{tds}
-			</tr>
-		);
+		const row: ReactElement =
+			<Grid container spacing={2} item xs={12} key={symbolIndex}>
+				{rowElements}
+			</Grid>;
+		tableElements.push( row );
 	}
-	return <div className='col-12'>
-		<table className='container-fluid'>
-			<tbody>
-				{trs}
-			</tbody>
-		</table>
-	</div>;
+	return (
+		<Grid container spacing={2}>
+			{tableElements}
+		</Grid>
+	);
 }
 
-const Result: React.FC<IResultProps> = ( props: IResultProps ) => {
+const Result: FC<ResultProps> = ( props: ResultProps ) => {
+	const { reelIndexes } = props;
+
 	let code = 'rngTool.setRngSpinData([\n[\n';
-	for ( let reelIndex = 0; reelIndex < props.reelIndexes.length; reelIndex++ ) {
+	for ( let reelIndex = 0; reelIndex < reelIndexes.length; reelIndex++ ) {
 		let reelText = '[ ';
-		for ( let symbolIndex = 0; symbolIndex < props.reelIndexes[ reelIndex ].length; symbolIndex++ ) {
-			const symbol = props.reelIndexes[ reelIndex ][ symbolIndex ];
+		for ( let symbolIndex = 0; symbolIndex < reelIndexes[ reelIndex ].length; symbolIndex++ ) {
+			const symbol = reelIndexes[ reelIndex ][ symbolIndex ];
 			reelText = reelText.concat( '"' + symbol + '"' );
-			if ( symbolIndex !== props.reelIndexes[ reelIndex ].length - 1 ) {
+			if ( symbolIndex !== reelIndexes[ reelIndex ].length - 1 ) {
 				reelText = reelText.concat( ', ' );
 			}
 		}
 		reelText = reelText.concat( ' ]' );
-		if ( reelIndex !== props.reelIndexes.length - 1 ) {
+		if ( reelIndex !== reelIndexes.length - 1 ) {
 			reelText = reelText.concat( ',\n' );
 		}
 		code = code.concat( reelText );
 	}
 	code = code.concat( '\n]\n]);' );
-	return <div className='col-12'>
-		<div className='form-group row'>
-			<div className='col-12'>
-				<textarea rows={15} id='rngToolResult' className='form-control' value={code} readOnly></textarea>
-			</div>
-			<CopyButton style='btn btn-light col-12' targetElementId='rngToolResult' />
-		</div>
-	</div>
+	return (
+		<React.Fragment>
+			<TextField
+				fullWidth
+				multiline
+				rows={15}
+				inputProps={{ readOnly: true }}
+				label='Convert result'
+				id='rngToolResult'
+				value={code}
+			/>
+			<CopyButton
+				buttonProps={{
+					fullWidth: true,
+					size: 'large',
+					color: 'primary',
+					variant: 'contained'
+				}}
+				targetElementId='rngToolResult'
+			>
+				Copy result
+			</CopyButton>
+		</React.Fragment >
+	);
 }
