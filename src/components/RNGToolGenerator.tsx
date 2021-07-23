@@ -139,46 +139,44 @@ export const RNGToolGenerator: FC = () => {
 
 	const classes = useStyles();
 
+	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
+		const newReelAmount = Number.parseInt( event.target.value );
+		if ( isPositiveInteger( newReelAmount ) ) {
+			setReelAmount( newReelAmount );
+
+			const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
+			for ( let i = 0; i < newReelIndexes.length; i++ ) {
+				newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
+			}
+			setReelIndexes( newReelIndexes );
+		}
+	}
+
+	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
+		const newSymbolAmount = Number.parseInt( event.target.value );
+		if ( isPositiveInteger( newSymbolAmount ) ) {
+			setSymbolAmount( newSymbolAmount );
+
+			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+			newReelIndexes.forEach( ( reel, index ) => {
+				const newReel: Array<string> = new Array<string>( newSymbolAmount );
+				for ( let i = 0; i < newReel.length; i++ ) {
+					newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
+				}
+				newReelIndexes[ index ] = newReel;
+			} );
+			setReelIndexes( newReelIndexes );
+		}
+	}
+
 	return (
 		<form className={classes.root} >
 			<Grid container spacing={2}>
 				<Grid item xs={12} md={6}>
-					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={( event ) => {
-						const newReelAmount = Number.parseInt( event.target.value );
-						if ( isPositiveInteger( newReelAmount ) ) {
-							const add = newReelAmount > reelAmount;
-							setReelAmount( newReelAmount );
-
-							const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-							if ( add ) {
-								newReelIndexes.push( newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] ) );
-							} else {
-								newReelIndexes.splice( newReelIndexes.length - 1 );
-							}
-							setReelIndexes( newReelIndexes );
-						}
-					}} />
+					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={handleReelAmountChange} />
 				</Grid>
 				<Grid item xs={12} md={6}>
-					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={( event ) => {
-						const newSymbolAmount = Number.parseInt( event.target.value );
-						if ( isPositiveInteger( newSymbolAmount ) ) {
-							const add = newSymbolAmount > symbolAmount;
-							setSymbolAmount( newSymbolAmount );
-
-							const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-							if ( add ) {
-								newReelIndexes.forEach( reel => {
-									reel.push( availableSymbolList[ 0 ] );
-								} );
-							} else {
-								newReelIndexes.forEach( reel => {
-									reel.splice( reel.length - 1 );
-								} );
-							}
-							setReelIndexes( newReelIndexes );
-						}
-					}} />
+					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={handleRowAmountChange} />
 				</Grid>
 			</Grid>
 			<Divider className={classes.divider} />
