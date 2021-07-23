@@ -174,7 +174,7 @@ export const NavTabs: FC<NavTabsProps> = ( props: NavTabsProps ) => {
 
 	const handleChange = ( event: React.ChangeEvent<unknown>, value: number ) => {
 		const location = {
-			pathname: '/',
+			pathname: history.location.pathname,
 			search: `tab=${ value }`
 		};
 		history.push( location );
