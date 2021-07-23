@@ -147,8 +147,11 @@ export const App: FC = () => {
 										currentIndex={tabIndex}
 										className={classes.tabPanel}
 									>
-										<Typography>
+										<Typography variant='h2'>
 											ERROR 404
+										</Typography >
+										<Typography variant='body1'>
+											This page not found :(
 										</Typography >
 									</TabPanel>
 								</Box>
@@ -170,7 +173,11 @@ export const NavTabs: FC<NavTabsProps> = ( props: NavTabsProps ) => {
 	const history = useHistory();
 
 	const handleChange = ( event: React.ChangeEvent<unknown>, value: number ) => {
-		history.push( `?tab=${ value }` );
+		const location = {
+			pathname: '/',
+			search: `tab=${ value }`
+		};
+		history.push( location );
 	};
 
 	return (

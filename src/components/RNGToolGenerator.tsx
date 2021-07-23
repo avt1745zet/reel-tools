@@ -317,7 +317,7 @@ const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
 		const textField: ReactElement = <Box sx={{ display: 'inline-flex' }} >
 			<TextField
 				key='textField'
-				label="Custom symbol"
+				label='Custom symbol'
 				placeholder='Define symbol...'
 				value={symbol}
 				onChange={event => {
