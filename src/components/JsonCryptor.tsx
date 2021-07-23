@@ -15,7 +15,7 @@ const useStyles = makeStyles( () =>
 	} )
 );
 
-export const JasonCryptor: FC = () => {
+export const JsonCryptor: FC = () => {
 	const classes = useStyles();
 	return (
 		<React.Fragment>

@@ -4,7 +4,7 @@ import { BoxProps, CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, 
 import { BrowserRouter as Router, Route, useHistory } from 'react-router-dom';
 
 import { ReelConvertArea } from './components/ReelConverter';
-import { JasonCryptor } from './components/JasonCryptor';
+import { JsonCryptor } from './components/JsonCryptor';
 import { RNGToolGenerator } from './components/RNGToolGenerator';
 import packageJson from '../package.json';
 
@@ -217,7 +217,7 @@ export const ReelConvertTabContent: FC = () => {
 export const CryptoTabContent: FC = () => {
 	return (
 		<Box>
-			<JasonCryptor />
+			<JsonCryptor />
 		</Box>
 	);
 };
