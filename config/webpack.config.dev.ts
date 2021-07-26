@@ -11,7 +11,7 @@ const config: webpack.Configuration = webpackMerge( common, {
 	mode: 'development',
 	plugins: [
 		new HtmlWebpackPlugin( {
-			template: 'src/index.html',
+			template: path.join( __dirname, '../src/index.html' ),
 		} ),
 		new webpack.HotModuleReplacementPlugin(),
 		new ForkTsCheckerWebpackPlugin( {
