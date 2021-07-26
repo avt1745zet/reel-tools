@@ -34,7 +34,7 @@ const config: webpack.Configuration = {
 				test: /\.png/,
 				type: 'asset/resource'
 			}
-		],
+		]
 	}
 };
 
