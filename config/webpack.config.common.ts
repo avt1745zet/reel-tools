@@ -6,6 +6,7 @@ const config: webpack.Configuration = {
 	output: {
 		filename: '[name].[contenthash].js',
 		path: path.join( __dirname, '../dist' ),
+		assetModuleFilename: 'images/[hash][ext]'
 	},
 	resolve: {
 		extensions: [ '.tsx', '.ts', '.js' ],
