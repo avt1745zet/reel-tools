@@ -1,15 +1,29 @@
 import React, { FC, ReactElement, useState } from 'react';
-import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField } from '@material-ui/core';
+import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField, Tooltip, Fab, Typography } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 import { CopyButton } from './CopyButton';
 
-interface CheckboxesProps {
+interface AvailableSymbolSelectorPanelProps {
 	originalSelectOptionList: Array<ISelectStatu>;
 	customSelectOptionList: Array<ISelectStatu>;
 	onOriginalCheckedChange ( index: number, checked: boolean ): void;
 	onCustomCheckedChange ( index: number, checked: boolean ): void;
 	onCustomSymbolChange ( index: number, newSymbolName: string ): void;
 	onAddNewCustomSymbol ( symbolName: string, defaultChecked: boolean ): void;
+}
+
+interface SlotSettingListProps {
+	availableSymbolList: Array<string>;
+	reelIndexesList: Array<Array<Array<string>>>;
+	onChange ( reelIndexesList: Array<Array<Array<string>>> ): void;
+}
+
+interface SlotSettingProps {
+	availableSymbolList: Array<string>;
+	index: number;
+	reelIndexes: Array<Array<string>>;
+	onChange ( newReelIndexes: Array<Array<string>> ): void;
 }
 
 interface SelectTableProps {
@@ -21,7 +35,7 @@ interface SelectTableProps {
 }
 
 interface ResultProps {
-	reelIndexes: Array<Array<string>>;
+	reelIndexesList: Array<Array<Array<string>>>;
 }
 
 interface IVector2 {
@@ -113,9 +127,6 @@ const useStyles = makeStyles( () =>
 );
 
 export const RNGToolGenerator: FC = () => {
-	const [ reelAmount, setReelAmount ] = useState( defaultReelAmount );
-	const [ symbolAmount, setSymbolAmount ] = useState( defaultSymbolAmount );
-
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
 	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
@@ -127,132 +138,96 @@ export const RNGToolGenerator: FC = () => {
 	} );
 	const [ availableSymbolList, setAvailableSymbolList ] = useState( getCheckedSymbol( defaultSelectOptionList ) );
 
-	const defaultReelIndexes: Array<Array<string>> = new Array<Array<string>>();
-	for ( let reelIndex = 0; reelIndex < reelAmount; reelIndex++ ) {
-		defaultReelIndexes.push( [] );
-		for ( let symbolIndex = 0; symbolIndex < symbolAmount; symbolIndex++ ) {
+	const defaultReelIndexesList: Array<Array<Array<string>>> = new Array<Array<Array<string>>>( 1 );
+	const firstReelIndexes: Array<Array<string>> = new Array<Array<string>>( defaultReelAmount );
+	for ( let reelIndex = 0; reelIndex < defaultReelAmount; reelIndex++ ) {
+		firstReelIndexes[ reelIndex ] = new Array<string>( defaultSymbolAmount );
+		for ( let symbolIndex = 0; symbolIndex < defaultSymbolAmount; symbolIndex++ ) {
 			const symbolName = availableSymbolList[ defaultSelectIndex ];
-			defaultReelIndexes[ reelIndex ].push( symbolName );
+			firstReelIndexes[ reelIndex ][ symbolIndex ] = symbolName;
 		}
 	}
-	const [ reelIndexes, setReelIndexes ] = useState( defaultReelIndexes );
+	defaultReelIndexesList[ 0 ] = firstReelIndexes;
+
+	const [ reelIndexesList, setReelIndexesList ] = useState( defaultReelIndexesList );
+
+	const handleOriginalAvailableSymbolCheckedChange = ( index: number, checked: boolean ) => {
+		const newOriginalSelectOptionList: Array<ISelectStatu> = originalSelectOptionList.slice();
+		newOriginalSelectOptionList[ index ].checked = checked;
+		setOriginalSelectOptionList( newOriginalSelectOptionList );
+
+		const newSelectSymbolList = [ ...getCheckedSymbol( newOriginalSelectOptionList ), ...getCheckedSymbol( customSelectOptionList ) ];
+		setAvailableSymbolList( newSelectSymbolList );
+
+		const newReelIndexesList: Array<Array<Array<string>>> = generateReelIndexesListByAvailableSymbolList( reelIndexesList, newSelectSymbolList );
+		setReelIndexesList( newReelIndexesList );
+	}
+
+	const handleCustomAvailableSymbolCheckedChange = ( index: number, checked: boolean ) => {
+		const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
+		newCustomSelectOptionList[ index ].checked = checked;
+		setCustomSelectOptionList( newCustomSelectOptionList );
+
+		const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
+		setAvailableSymbolList( newSelectSymbolList )
+
+		const newReelIndexesList: Array<Array<Array<string>>> = generateReelIndexesListByAvailableSymbolList( reelIndexesList, newSelectSymbolList );
+		setReelIndexesList( newReelIndexesList );
+	}
+
+	const handleCustomAvailableSymbolNameChange = ( index: number, newSymbolName: string ) => {
+		newSymbolName = newSymbolName.toUpperCase();
+		const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
+		const newChecked = newSymbolName === '' ? false : newCustomSelectOptionList[ index ].checked;
+		newCustomSelectOptionList[ index ] = { symbol: newSymbolName, checked: newChecked };
+		setCustomSelectOptionList( newCustomSelectOptionList );
+
+		const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
+		setAvailableSymbolList( newSelectSymbolList )
+
+		const newReelIndexesList: Array<Array<Array<string>>> = generateReelIndexesListByAvailableSymbolList( reelIndexesList, newSelectSymbolList );
+		setReelIndexesList( newReelIndexesList );
+	}
+
+	const handleAddNewCustomAvailableSymbol = ( symbolName: string, checked: boolean ) => {
+		const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
+		newCustomSelectOptionList.push( { symbol: symbolName, checked: checked } );
+		setCustomSelectOptionList( newCustomSelectOptionList );
+
+		const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
+		setAvailableSymbolList( newSelectSymbolList )
+	}
+
+	const generateReelIndexesListByAvailableSymbolList: ( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => Array<Array<Array<string>>> =
+		( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => {
+			const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+			newReelIndexesList.forEach( reelIndexes => {
+				reelIndexes.forEach( ( reel, reelIndex ) => {
+					reel.forEach( ( symbol, symbolIndex ) => {
+						const isSymbolOutOfRange = !selectSymbolList.includes( symbol );
+						if ( isSymbolOutOfRange ) {
+							reelIndexes[ reelIndex ][ symbolIndex ] = selectSymbolList[ 0 ];
+						}
+					} )
+				} );
+			} );
+			return newReelIndexesList;
+		}
 
 	const classes = useStyles();
 
-	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newReelAmount = Number.parseInt( event.target.value );
-		if ( isPositiveInteger( newReelAmount ) ) {
-			setReelAmount( newReelAmount );
-
-			const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
-			for ( let i = 0; i < newReelIndexes.length; i++ ) {
-				newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
-			}
-			setReelIndexes( newReelIndexes );
-		}
-	}
-
-	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newSymbolAmount = Number.parseInt( event.target.value );
-		if ( isPositiveInteger( newSymbolAmount ) ) {
-			setSymbolAmount( newSymbolAmount );
-
-			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-			newReelIndexes.forEach( ( reel, index ) => {
-				const newReel: Array<string> = new Array<string>( newSymbolAmount );
-				for ( let i = 0; i < newReel.length; i++ ) {
-					newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
-				}
-				newReelIndexes[ index ] = newReel;
-			} );
-			setReelIndexes( newReelIndexes );
-		}
-	}
-
 	return (
 		<form className={classes.root} >
-			<Grid container spacing={2}>
-				<Grid item xs={12} md={6}>
-					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={handleReelAmountChange} />
-				</Grid>
-				<Grid item xs={12} md={6}>
-					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={handleRowAmountChange} />
-				</Grid>
-			</Grid>
+			<AvailableSymbolSelectorPanel originalSelectOptionList={originalSelectOptionList} customSelectOptionList={customSelectOptionList}
+				onOriginalCheckedChange={handleOriginalAvailableSymbolCheckedChange}
+				onCustomCheckedChange={handleCustomAvailableSymbolCheckedChange}
+				onCustomSymbolChange={handleCustomAvailableSymbolNameChange}
+				onAddNewCustomSymbol={handleAddNewCustomAvailableSymbol}
+			/>
 			<Divider className={classes.divider} />
-			<Checkboxes originalSelectOptionList={originalSelectOptionList} customSelectOptionList={customSelectOptionList}
-				onOriginalCheckedChange={( index, checked ) => {
-					const newOriginalSelectOptionList: Array<ISelectStatu> = originalSelectOptionList.slice();
-					newOriginalSelectOptionList[ index ].checked = checked;
-					setOriginalSelectOptionList( newOriginalSelectOptionList );
-
-					const newSelectSymbolList = [ ...getCheckedSymbol( newOriginalSelectOptionList ), ...getCheckedSymbol( customSelectOptionList ) ];
-					setAvailableSymbolList( newSelectSymbolList );
-
-					const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-					newReelIndexes.forEach( ( reel, reelIndex ) => {
-						reel.forEach( ( symbol, symbolIndex ) => {
-							const isSymbolOutOfRange = !newSelectSymbolList.includes( symbol );
-							if ( isSymbolOutOfRange ) {
-								newReelIndexes[ reelIndex ][ symbolIndex ] = newSelectSymbolList[ 0 ];
-							}
-						} )
-					} );
-					setReelIndexes( newReelIndexes );
-				}} onCustomCheckedChange={( index, checked ) => {
-					const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
-					newCustomSelectOptionList[ index ].checked = checked;
-					setCustomSelectOptionList( newCustomSelectOptionList );
-
-					const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
-					setAvailableSymbolList( newSelectSymbolList )
-
-					const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-					newReelIndexes.forEach( ( reel, reelIndex ) => {
-						reel.forEach( ( symbol, symbolIndex ) => {
-							const isSymbolOutOfRange = !newSelectSymbolList.includes( symbol );
-							if ( isSymbolOutOfRange ) {
-								newReelIndexes[ reelIndex ][ symbolIndex ] = newSelectSymbolList[ 0 ];
-							}
-						} )
-					} );
-					setReelIndexes( newReelIndexes );
-				}} onCustomSymbolChange={( index, newSymbolName ) => {
-					newSymbolName = newSymbolName.toUpperCase();
-					const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
-					const newChecked = newSymbolName === '' ? false : newCustomSelectOptionList[ index ].checked;
-					newCustomSelectOptionList[ index ] = { symbol: newSymbolName, checked: newChecked };
-					setCustomSelectOptionList( newCustomSelectOptionList );
-
-					const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
-					setAvailableSymbolList( newSelectSymbolList )
-
-					const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-					newReelIndexes.forEach( ( reel, reelIndex ) => {
-						reel.forEach( ( symbol, symbolIndex ) => {
-							const isSymbolOutOfRange = !availableSymbolList.includes( symbol );
-							if ( isSymbolOutOfRange ) {
-								newReelIndexes[ reelIndex ][ symbolIndex ] = availableSymbolList[ 0 ];
-							}
-						} )
-					} );
-					setReelIndexes( newReelIndexes );
-				}} onAddNewCustomSymbol={( symbolName, checked ) => {
-					const newCustomSelectOptionList: Array<ISelectStatu> = customSelectOptionList.slice();
-					newCustomSelectOptionList.push( { symbol: symbolName, checked: checked } );
-					setCustomSelectOptionList( newCustomSelectOptionList );
-
-					const newSelectSymbolList = [ ...getCheckedSymbol( originalSelectOptionList ), ...getCheckedSymbol( newCustomSelectOptionList ) ];
-					setAvailableSymbolList( newSelectSymbolList )
-				}} />
+			<SlotSettingList availableSymbolList={availableSymbolList} reelIndexesList={reelIndexesList} onChange={( newReelIndexesList ) => { setReelIndexesList( newReelIndexesList ) }}></SlotSettingList>
 			<Divider className={classes.divider} />
-			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
-				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-				newReelIndexes[ position.x ][ position.y ] = value;
-				setReelIndexes( newReelIndexes );
-			}} />
-			<Divider className={classes.divider} />
-			<Result reelIndexes={reelIndexes}></Result>
+			<Result reelIndexesList={reelIndexesList}></Result>
 		</form>
 	);
 };
@@ -272,7 +247,7 @@ function getCheckedSymbol ( options: Array<ISelectStatu> ): Array<string> {
 	return result;
 }
 
-const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
+const AvailableSymbolSelectorPanel: FC<AvailableSymbolSelectorPanelProps> = ( props: AvailableSymbolSelectorPanelProps ) => {
 	const { originalSelectOptionList, customSelectOptionList, onOriginalCheckedChange, onCustomCheckedChange, onCustomSymbolChange, onAddNewCustomSymbol } = props;
 
 	const classes = useStyles();
@@ -286,7 +261,7 @@ const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
 		};
 
 		return (
-			<Grid item key={index} xs={6} sm={4} md={3} lg={2}>
+			<Grid item key={index} xs={12} sm={6} md={4} lg={2}>
 				<FormControlLabel
 					control={<Checkbox color='primary' checked={checked} onChange={( handleCheckboxChange( index ) )} />}
 					label={symbol}
@@ -349,7 +324,7 @@ const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
 			/>;
 
 		return (
-			<Grid item key={'custom' + index} xs={6} sm={4} md={3} lg={2}>
+			<Grid item key={'custom' + index} xs={12} sm={6} md={4} lg={2}>
 				<Box justifyContent='space-between' width='100%' display='inline-flex'>
 					{elements}
 				</Box>
@@ -361,6 +336,135 @@ const Checkboxes: FC<CheckboxesProps> = ( props: CheckboxesProps ) => {
 		{originalCheckboxes}
 		{customCheckboxes}
 	</Grid>;
+}
+
+const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps ) => {
+	const { availableSymbolList, reelIndexesList, onChange } = props;
+
+	const handleSlotSettingChange = ( index: number ) => ( reelIndexes: Array<Array<string>> ) => {
+		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+		newReelIndexesList[ index ] = reelIndexes;
+		onChange( newReelIndexesList );
+	};
+
+	const handleAddButtonClick = () => {
+		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+		const lastReelIndexes: Array<Array<string>> = newReelIndexesList[ newReelIndexesList.length - 1 ];
+		const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( lastReelIndexes.length );
+		for ( let reelIndex = 0; reelIndex < newReelIndexes.length; reelIndex++ ) {
+			const symbols = new Array<string>( lastReelIndexes[ reelIndex ].length );
+			for ( let symbolIndex = 0; symbolIndex < symbols.length; symbolIndex++ ) {
+				symbols[ symbolIndex ] = availableSymbolList[ 0 ];
+			}
+			newReelIndexes[ reelIndex ] = symbols;
+		}
+		newReelIndexesList.push( newReelIndexes );
+		onChange( newReelIndexesList );
+	};
+
+	const handleRemoveButtonClick = () => {
+		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+		newReelIndexesList.splice( newReelIndexesList.length - 1 );
+		onChange( newReelIndexesList );
+	};
+
+	const slotSettingElements: Array<ReactElement> = reelIndexesList.map( ( reelIndexes, index ) =>
+		<SlotSetting key={index} availableSymbolList={availableSymbolList} index={index} reelIndexes={reelIndexes} onChange={handleSlotSettingChange( index )} />
+	);
+
+	const addButton: ReactElement =
+		<Box display='inline-block' marginX={2}>
+			<Tooltip title='Add Spin Result'>
+				<Fab color='primary' onClick={handleAddButtonClick}>
+					<AddIcon />
+				</Fab>
+			</Tooltip>
+		</Box>;
+
+	const removeButton: ReactElement =
+		<Box display='inline-block' marginX={2}>
+			<Tooltip title='Delete last Spin Result'>
+				<Fab color='secondary' onClick={handleRemoveButtonClick}>
+					<RemoveIcon />
+				</Fab>
+			</Tooltip>
+		</Box>;
+
+	const getRemoveButton = ( reelIndexesList: Array<Array<Array<string>>> ) => {
+		return reelIndexesList.length > 1 ? removeButton : undefined;
+	}
+
+	const buttons: ReactElement =
+		<Box textAlign='center'>
+			{addButton}
+			{getRemoveButton( reelIndexesList )}
+		</Box>;
+
+	return (
+		<Box>
+			{slotSettingElements}
+			{buttons}
+		</Box>
+	);
+}
+
+const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
+	const { availableSymbolList, index, reelIndexes, onChange } = props;
+
+	const reelAmount = reelIndexes.length;
+	const symbolAmount = reelIndexes[ 0 ].length;
+
+	const classes = useStyles();
+
+	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
+		const newReelAmount = Number.parseInt( event.target.value );
+		if ( isPositiveInteger( newReelAmount ) ) {
+			const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
+			for ( let i = 0; i < newReelIndexes.length; i++ ) {
+				newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
+			}
+			onChange( newReelIndexes );
+		}
+	}
+
+	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
+		const newSymbolAmount = Number.parseInt( event.target.value );
+		if ( isPositiveInteger( newSymbolAmount ) ) {
+			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+			newReelIndexes.forEach( ( reel, index ) => {
+				const newReel: Array<string> = new Array<string>( newSymbolAmount );
+				for ( let i = 0; i < newReel.length; i++ ) {
+					newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
+				}
+				newReelIndexes[ index ] = newReel;
+			} );
+			onChange( newReelIndexes );
+		}
+	}
+
+	return (
+		<Box>
+			<Box>
+				<Typography color='textPrimary' variant='h5'>
+					Spin result {index + 1}
+				</Typography>
+			</Box>
+			<Grid container item spacing={2} xs={12}>
+				<Grid item xs={12} md={6}>
+					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={handleReelAmountChange} />
+				</Grid>
+				<Grid item xs={12} md={6}>
+					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={handleRowAmountChange} />
+				</Grid>
+			</Grid>
+			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
+				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+				newReelIndexes[ position.x ][ position.y ] = value;
+				onChange( newReelIndexes );
+			}} />
+			<Divider className={classes.divider} />
+		</Box>
+	);
 }
 
 const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
@@ -397,38 +501,48 @@ const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
 			);
 		}
 		const row: ReactElement =
-			<Grid container spacing={2} item xs={12} key={symbolIndex}>
+			<Grid container item xs={12} key={symbolIndex}>
 				{rowElements}
 			</Grid>;
 		tableElements.push( row );
 	}
 	return (
-		<Grid container spacing={2}>
+		<Grid container item spacing={2} xs={12}>
 			{tableElements}
 		</Grid>
 	);
 }
 
 const Result: FC<ResultProps> = ( props: ResultProps ) => {
-	const { reelIndexes } = props;
+	const { reelIndexesList } = props;
 
-	let code = 'rngTool.setRngSpinData([\n[\n';
-	for ( let reelIndex = 0; reelIndex < reelIndexes.length; reelIndex++ ) {
-		let reelText = '[ ';
-		for ( let symbolIndex = 0; symbolIndex < reelIndexes[ reelIndex ].length; symbolIndex++ ) {
-			const symbol = reelIndexes[ reelIndex ][ symbolIndex ];
-			reelText = reelText.concat( '"' + symbol + '"' );
-			if ( symbolIndex !== reelIndexes[ reelIndex ].length - 1 ) {
-				reelText = reelText.concat( ', ' );
+	let code = 'rngTool.setRngSpinData([\n';
+
+	reelIndexesList.forEach( ( reelIndexes, index ) => {
+		let reelIndexesText = '[\n';
+		reelIndexes.forEach( ( reel, reelIndex ) => {
+			let reelText = '[ ';
+			reel.forEach( ( symbol, symbolIndex ) => {
+				reelText = reelText.concat( '"' + symbol + '"' );
+				if ( symbolIndex !== reelIndexes[ reelIndex ].length - 1 ) {
+					reelText = reelText.concat( ', ' );
+				}
+			} );
+			reelText = reelText.concat( ' ]' );
+			if ( reelIndex !== reelIndexes.length - 1 ) {
+				reelText = reelText.concat( ',\n' );
 			}
+			reelIndexesText = reelIndexesText.concat( reelText );
+		} );
+		reelIndexesText = reelIndexesText.concat( '\n]' );
+		if ( index !== reelIndexesList.length - 1 ) {
+			reelIndexesText = reelIndexesText.concat( ',\n' );
 		}
-		reelText = reelText.concat( ' ]' );
-		if ( reelIndex !== reelIndexes.length - 1 ) {
-			reelText = reelText.concat( ',\n' );
-		}
-		code = code.concat( reelText );
-	}
-	code = code.concat( '\n]\n]);' );
+		code = code.concat( reelIndexesText );
+	} );
+
+	code = code.concat( '\n]);' );
+
 	return (
 		<React.Fragment>
 			<TextField
@@ -436,7 +550,8 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 				multiline
 				rows={15}
 				inputProps={{ readOnly: true }}
-				label='Convert result'
+				variant='filled'
+				label='Output result'
 				id='rngToolResult'
 				value={code}
 			/>
