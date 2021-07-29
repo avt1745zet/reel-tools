@@ -1,14 +1,13 @@
-import React, { FC } from 'react';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { BoxProps, CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, createTheme, makeStyles, Tab, Tabs, ThemeProvider, TabsProps } from '@material-ui/core';
+import React, { FC, useState } from 'react';
+import { BoxProps, CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, createTheme, makeStyles, Tab, Tabs, ThemeProvider, IconButton, Hidden, Drawer } from '@material-ui/core';
+import MenuIcon from '@material-ui/icons/Menu';
 import { BrowserRouter as Router, Route, useHistory } from 'react-router-dom';
 
 import { ReelConvertArea } from './components/ReelConverter';
 import { JsonCryptor } from './components/JsonCryptor';
 import { RNGToolGenerator } from './components/RNGToolGenerator';
-import packageJson from '../package.json';
 
-import favicon from './res/favicon/favicon_512.png';
+import packageJson from '../package.json';
 
 interface TabPanelProps extends BoxProps {
 	/**
@@ -58,6 +57,16 @@ const defaultTheme = createTheme( {
 // } );
 
 export const App: FC = () => {
+	const [ isMenuOpen, setIsMenuOpen ] = useState( false );
+
+	const handleMenuButtonClick = () => {
+		setIsMenuOpen( true );
+	};
+
+	const handleMenuClick = () => {
+		setIsMenuOpen( false );
+	};
+
 	const classes = useStyles();
 
 	return (
@@ -65,16 +74,18 @@ export const App: FC = () => {
 			<ThemeProvider
 				theme={defaultTheme}>
 				<CssBaseline />
-				<HelmetProvider>
-					<Helmet >
-						<title>Reel Tools</title>
-						<link rel='icon' type='image/x-icon' href={favicon}></link>
-					</Helmet>
-				</HelmetProvider>
-
 				<Box>
 					<AppBar>
 						<Toolbar>
+							<Hidden mdUp>
+								<IconButton
+									color='inherit'
+									edge="start"
+									onClick={handleMenuButtonClick}
+								>
+									<MenuIcon />
+								</IconButton>
+							</Hidden>
 							<Box>
 								<Typography
 									style={{
@@ -119,8 +130,8 @@ export const App: FC = () => {
 
 						return (
 							<Box className={classes.root}>
-								<NavTabs value={isValidedTabParam ? tabIndex : false} className={classes.tabs} variant='scrollable' orientation='vertical' />
-								<Box className={classes.main} role='main'>
+								<NavMenu currentIndex={isValidedTabParam ? tabIndex : false} isOpen={isMenuOpen} onClick={handleMenuClick} />
+								<Box component='main' className={classes.main} role='main'>
 									<TabPanel
 										index={0}
 										currentIndex={tabIndex}
@@ -164,13 +175,18 @@ export const App: FC = () => {
 	);
 }
 
-interface NavTabsProps extends TabsProps {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	value: any;
+interface NavMenuProps {
+	currentIndex: number | boolean;
+	isOpen: boolean;
+	onClick (): void;
 }
 
-export const NavTabs: FC<NavTabsProps> = ( props: NavTabsProps ) => {
+export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
+	const { currentIndex, isOpen, onClick } = props;
+
 	const history = useHistory();
+
+	const classes = useStyles();
 
 	const handleChange = ( event: React.ChangeEvent<unknown>, value: number ) => {
 		const location = {
@@ -180,12 +196,34 @@ export const NavTabs: FC<NavTabsProps> = ( props: NavTabsProps ) => {
 		history.push( location );
 	};
 
+	const handleDrawerClick = () => {
+		onClick();
+	}
+
 	return (
-		<Tabs {...props} onChange={handleChange} aria-label='nav-tabs'>
-			<Tab label='Convertor' />
-			<Tab label='Crypto' />
-			<Tab label='RNG Tool' />
-		</Tabs>
+		<nav>
+			<Hidden smDown>
+				<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} aria-label='nav-tabs' orientation='vertical'>
+					<Tab label='Convertor' />
+					<Tab label='Crypto' />
+					<Tab label='RNG Tool' />
+				</Tabs>
+			</Hidden>
+			<Hidden mdUp>
+				<Drawer
+					variant='temporary'
+					anchor='left'
+					open={isOpen}
+					onClick={handleDrawerClick}
+				>
+					<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} centered={true} orientation='vertical' aria-label='nav-tabs'>
+						<Tab label='Convertor' />
+						<Tab label='Crypto' />
+						<Tab label='RNG Tool' />
+					</Tabs>
+				</Drawer>
+			</Hidden>
+		</nav>
 	);
 };
 
