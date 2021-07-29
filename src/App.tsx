@@ -3,9 +3,9 @@ import { BoxProps, CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, 
 import MenuIcon from '@material-ui/icons/Menu';
 import { BrowserRouter as Router, Route, useHistory } from 'react-router-dom';
 
-import { ReelConvertArea } from './components/ReelConverter';
-import { JsonCryptor } from './components/JsonCryptor';
-import { RNGToolGenerator } from './components/RNGToolGenerator';
+import ExcelReelStripsConverter from './pages/excelReelStripsConverter/ExcelReelStripsConverter';
+import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
+import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
 
 import packageJson from '../package.json';
 
@@ -247,7 +247,7 @@ export const TabPanel: FC<TabPanelProps> = ( props: TabPanelProps ) => {
 export const ReelConvertTabContent: FC = () => {
 	return (
 		<Box>
-			<ReelConvertArea />
+			<ExcelReelStripsConverter />
 		</Box>
 	);
 };
@@ -255,7 +255,7 @@ export const ReelConvertTabContent: FC = () => {
 export const CryptoTabContent: FC = () => {
 	return (
 		<Box>
-			<JsonCryptor />
+			<JsonFormatCryptor />
 		</Box>
 	);
 };
@@ -263,7 +263,7 @@ export const CryptoTabContent: FC = () => {
 export const RNGToolGeneratorTabContent: FC = () => {
 	return (
 		<Box>
-			<RNGToolGenerator />
+			<RNGToolCodeGenerator />
 		</Box>
 	);
 };

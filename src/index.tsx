@@ -4,7 +4,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 import { App } from './App';
 
-import favicon from './res/favicon/favicon_512.png';
+import favicon from './assets/favicon/favicon_512.png';
 
 ReactDOM.render(
 	<React.StrictMode>

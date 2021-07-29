@@ -1,7 +1,7 @@
 import React, { FC, Fragment, useState } from 'react';
 import { Box, Button, createStyles, makeStyles, TextField, Typography } from '@material-ui/core';
-import { CopyButton } from './CopyButton';
-import { CryptoHelper } from './CryptoHelper';
+import { CopyButton } from '../../../components/buttons/CopyButton';
+import { CryptoHelper } from '../../../utils/CryptoHelper';
 
 interface ResultProps {
 	message: string;
@@ -11,24 +11,7 @@ interface CausionProps {
 	isLegalFormat: boolean;
 }
 
-let objectToEncrypt: JSON;
-
-const placeholder = `{
-	"stripOrder": [
-		"PIC1",
-		"PIC2",
-		"PIC3",
-		"PIC4",
-		"PIC5",
-		"A",
-		"K",
-		"Q",
-		"J",
-		"T",
-		"WILD",
-		"SCATTER"
-	]
-}`;
+let decryptText = '';
 
 const useStyles = makeStyles( () =>
 	createStyles( {
@@ -38,42 +21,46 @@ const useStyles = makeStyles( () =>
 	} )
 );
 
-export const EncryptArea: FC = () => {
-	const [ encryptString, setEncryptString ] = useState( '' );
-	const [ isLegalFormat, setIsLegalFormat ] = useState( false );
+export const DecryptArea: FC = () => {
+	const [ message, setMessage ] = useState( '' );
+	const [ isLegalFormat, setIsLegalFormat ] = useState( true );
 
 	const classes = useStyles();
 	return <form className={classes.root} >
 		<TextField
 			fullWidth
-			multiline
-			rows={16}
 			InputLabelProps={{
 				shrink: true,
 			}}
-			label='Encrypt'
-			placeholder={placeholder}
+			label='Decrypt'
+			placeholder='Enter any encrypt string'
 			onChange={( event ) => {
-				try {
-					objectToEncrypt = JSON.parse( event.target.value );
-					setIsLegalFormat( true );
-				} catch {
-					setIsLegalFormat( false );
-				}
+				decryptText = event.target.value;
 			}}
 		/>
 		<Button
-			variant='contained'
-			color='primary'
 			fullWidth
-			disabled={!isLegalFormat}
+			color='primary'
+			variant='contained'
 			onClick={() => {
-				setEncryptString( CryptoHelper.encrypt( objectToEncrypt ) )
+				try {
+					const decryptObject = CryptoHelper.decrypt<JSON>( decryptText );
+					if ( decryptObject ) {
+						setMessage( JSON.stringify( decryptObject ) );
+						setIsLegalFormat( true );
+					} else {
+						setMessage( '' );
+						setIsLegalFormat( false );
+					}
+				} catch {
+					setMessage( '' );
+					setIsLegalFormat( false );
+				}
 			}}>
-			Start Encrypt
+			Start Decrypt
 		</Button>
 		<Causion isLegalFormat={isLegalFormat} />
-		<Result message={encryptString} />
+		<Result message={message} />
 	</form>
 };
 
@@ -84,9 +71,9 @@ const Causion: FC<CausionProps> = ( props: CausionProps ) => {
 		return (
 			<Typography
 				color='error'
-				variant={'body1'}
+				variant='body1'
 			>
-				.json format is illegal!
+				Your format of input encrypted text is not correct!!
 			</Typography >
 		);
 	} else {
@@ -102,7 +89,7 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 			<TextField
 				fullWidth
 				inputProps={{ readOnly: true }}
-				id='encryptResult'
+				id='decryptResult'
 				value={message}
 			/>
 			<CopyButton
@@ -112,8 +99,8 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 					color: 'primary',
 					variant: 'contained'
 				}}
-				targetElementId='encryptResult'
+				targetElementId='decryptResult'
 			/>
 		</Box>
 	)
-};
+}
