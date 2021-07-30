@@ -385,7 +385,7 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 
 	const removeButton: ReactElement =
 		<Box display='inline-block' marginX={2}>
-			<Tooltip title='Delete last Spin Result'>
+			<Tooltip title='Delete Last Spin Result'>
 				<Fab color='secondary' onClick={handleRemoveButtonClick}>
 					<RemoveIcon />
 				</Fab>
