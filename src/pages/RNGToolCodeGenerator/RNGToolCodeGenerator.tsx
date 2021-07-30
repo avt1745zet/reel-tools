@@ -2,7 +2,7 @@ import React, { FC, ReactElement, useState } from 'react';
 import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField, Tooltip, Fab, Typography } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { CopyButton } from './CopyButton';
+import { CopyButton } from '../../components/buttons/CopyButton';
 
 interface AvailableSymbolSelectorPanelProps {
 	originalSelectOptionList: Array<ISelectStatu>;
@@ -126,7 +126,7 @@ const useStyles = makeStyles( () =>
 	} ),
 );
 
-export const RNGToolGenerator: FC = () => {
+const RNGToolCodeGenerator: FC = () => {
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
 	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
@@ -231,6 +231,8 @@ export const RNGToolGenerator: FC = () => {
 		</form>
 	);
 };
+
+export default RNGToolCodeGenerator;
 
 function isPositiveInteger ( value: number ): boolean {
 	const result: boolean = Number.isInteger( value ) && value > 0 ? true : false;
@@ -383,7 +385,7 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 
 	const removeButton: ReactElement =
 		<Box display='inline-block' marginX={2}>
-			<Tooltip title='Delete last Spin Result'>
+			<Tooltip title='Delete Last Spin Result'>
 				<Fab color='secondary' onClick={handleRemoveButtonClick}>
 					<RemoveIcon />
 				</Fab>
