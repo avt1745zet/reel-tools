@@ -103,11 +103,16 @@ const useStyles = makeStyles( () =>
 		divider: {
 			marginBlock: '10px',
 			height: 0
+		},
+		slotSetting: {
+			marginBlock: '20px',
 		}
-	} ),
+	} )
 );
 
 const RNGToolCodeGenerator: FC = () => {
+	const classes = useStyles();
+
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
 	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
@@ -171,23 +176,20 @@ const RNGToolCodeGenerator: FC = () => {
 		setAvailableSymbolList( newSelectSymbolList )
 	}
 
-	const generateReelIndexesListByAvailableSymbolList: ( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => Array<Array<Array<string>>> =
-		( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => {
-			const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
-			newReelIndexesList.forEach( reelIndexes => {
-				reelIndexes.forEach( ( reel, reelIndex ) => {
-					reel.forEach( ( symbol, symbolIndex ) => {
-						const isSymbolOutOfRange = !selectSymbolList.includes( symbol );
-						if ( isSymbolOutOfRange ) {
-							reelIndexes[ reelIndex ][ symbolIndex ] = selectSymbolList[ 0 ];
-						}
-					} )
-				} );
+	const generateReelIndexesListByAvailableSymbolList = ( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ): Array<Array<Array<string>>> => {
+		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+		newReelIndexesList.forEach( reelIndexes => {
+			reelIndexes.forEach( ( reel, reelIndex ) => {
+				reel.forEach( ( symbol, symbolIndex ) => {
+					const isSymbolOutOfRange = !selectSymbolList.includes( symbol );
+					if ( isSymbolOutOfRange ) {
+						reelIndexes[ reelIndex ][ symbolIndex ] = selectSymbolList[ 0 ];
+					}
+				} )
 			} );
-			return newReelIndexesList;
-		}
-
-	const classes = useStyles();
+		} );
+		return newReelIndexesList;
+	}
 
 	return (
 		<form className={classes.root} >
@@ -306,6 +308,8 @@ const AvailableSymbolSelectorPanel: FC<AvailableSymbolSelectorPanelProps> = ( pr
 const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps ) => {
 	const { availableSymbolList, reelIndexesList, onChange } = props;
 
+	const classes = useStyles();
+
 	const handleSlotSettingChange = ( index: number ) => ( reelIndexes: Array<Array<string>> ) => {
 		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
 		newReelIndexesList[ index ] = reelIndexes;
@@ -340,6 +344,7 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 			availableSymbolList={availableSymbolList}
 			reelIndexes={reelIndexes}
 			onChange={handleSlotSettingChange( index )}
+			className={classes.slotSetting}
 		/>
 	);
 
