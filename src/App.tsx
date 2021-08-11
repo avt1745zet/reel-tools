@@ -8,6 +8,7 @@ import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
 import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
 
 import packageJson from '../package.json';
+import WayGamePayoutCalculator from './pages/wayGamePayoutCalculator/WayGamePayoutCalculator';
 
 interface TabPanelProps extends BoxProps {
 	/**
@@ -42,7 +43,7 @@ const useStyles = makeStyles( ( theme ) =>
 	} )
 );
 
-const tabCount = 3;
+const tabCount = 4;
 
 const defaultTheme = createTheme( {
 	palette: {
@@ -154,6 +155,13 @@ export const App: FC = () => {
 										<RNGToolGeneratorTabContent />
 									</TabPanel>
 									<TabPanel
+										index={3}
+										currentIndex={tabIndex}
+										className={classes.tabPanel}
+									>
+										<WayGamePayoutCalculatorTabContent />
+									</TabPanel>
+									<TabPanel
 										index={404}
 										currentIndex={tabIndex}
 										className={classes.tabPanel}
@@ -207,6 +215,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 					<Tab label='Convertor' />
 					<Tab label='Crypto' />
 					<Tab label='RNG Tool' />
+					<Tab label='Way Game Payout Calculator' />
 				</Tabs>
 			</Hidden>
 			<Hidden mdUp>
@@ -220,6 +229,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 						<Tab label='Convertor' />
 						<Tab label='Crypto' />
 						<Tab label='RNG Tool' />
+						<Tab label='Way Game Payout Calculator' />
 					</Tabs>
 				</Drawer>
 			</Hidden>
@@ -264,6 +274,14 @@ export const RNGToolGeneratorTabContent: FC = () => {
 	return (
 		<Box>
 			<RNGToolCodeGenerator />
+		</Box>
+	);
+};
+
+export const WayGamePayoutCalculatorTabContent: FC = () => {
+	return (
+		<Box>
+			<WayGamePayoutCalculator />
 		</Box>
 	);
 };

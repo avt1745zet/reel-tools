@@ -20,8 +20,8 @@ interface SlotSettingListProps {
 }
 
 interface SlotSettingProps {
+	title?: string;
 	availableSymbolList: Array<string>;
-	index: number;
 	reelIndexes: Array<Array<string>>;
 	onChange ( newReelIndexes: Array<Array<string>> ): void;
 }
@@ -130,22 +130,14 @@ const RNGToolCodeGenerator: FC = () => {
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
 	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
-	const defaultAvailableSymbolList: Array<string> = new Array<string>();
-	defaultSelectOptionList.forEach( selectOption => {
-		if ( selectOption.checked ) {
-			defaultAvailableSymbolList.push( selectOption.symbol );
-		}
-	} );
 	const [ availableSymbolList, setAvailableSymbolList ] = useState( getCheckedSymbol( defaultSelectOptionList ) );
 
 	const defaultReelIndexesList: Array<Array<Array<string>>> = new Array<Array<Array<string>>>( 1 );
 	const firstReelIndexes: Array<Array<string>> = new Array<Array<string>>( defaultReelAmount );
 	for ( let reelIndex = 0; reelIndex < defaultReelAmount; reelIndex++ ) {
 		firstReelIndexes[ reelIndex ] = new Array<string>( defaultSymbolAmount );
-		for ( let symbolIndex = 0; symbolIndex < defaultSymbolAmount; symbolIndex++ ) {
-			const symbolName = availableSymbolList[ defaultSelectIndex ];
-			firstReelIndexes[ reelIndex ][ symbolIndex ] = symbolName;
-		}
+		const symbolName = availableSymbolList[ defaultSelectIndex ];
+		firstReelIndexes[ reelIndex ].fill( symbolName );
 	}
 	defaultReelIndexesList[ 0 ] = firstReelIndexes;
 
@@ -234,18 +226,8 @@ const RNGToolCodeGenerator: FC = () => {
 
 export default RNGToolCodeGenerator;
 
-function isPositiveInteger ( value: number ): boolean {
-	const result: boolean = Number.isInteger( value ) && value > 0 ? true : false;
-	return result;
-}
-
 function getCheckedSymbol ( options: Array<ISelectStatu> ): Array<string> {
-	const result: Array<string> = new Array<string>();
-	options.forEach( selectOption => {
-		if ( selectOption.checked ) {
-			result.push( selectOption.symbol );
-		}
-	} );
+	const result: Array<string> = options.filter( option => option.checked === true ).map( option => option.symbol );
 	return result;
 }
 
@@ -371,7 +353,7 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 	};
 
 	const slotSettingElements: Array<ReactElement> = reelIndexesList.map( ( reelIndexes, index ) =>
-		<SlotSetting key={index} availableSymbolList={availableSymbolList} index={index} reelIndexes={reelIndexes} onChange={handleSlotSettingChange( index )} />
+		<SlotSetting key={index} title={'Spin result ' + ( index + 1 )} availableSymbolList={availableSymbolList} reelIndexes={reelIndexes} onChange={handleSlotSettingChange( index )} />
 	);
 
 	const addButton: ReactElement =
@@ -411,7 +393,7 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 }
 
 const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
-	const { availableSymbolList, index, reelIndexes, onChange } = props;
+	const { title, availableSymbolList, reelIndexes, onChange } = props;
 
 	const reelAmount = reelIndexes.length;
 	const symbolAmount = reelIndexes[ 0 ].length;
@@ -420,43 +402,66 @@ const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
 
 	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
 		const newReelAmount = Number.parseInt( event.target.value );
-		if ( isPositiveInteger( newReelAmount ) ) {
-			const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
-			for ( let i = 0; i < newReelIndexes.length; i++ ) {
-				newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
-			}
-			onChange( newReelIndexes );
+
+		const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
+		for ( let i = 0; i < newReelIndexes.length; i++ ) {
+			newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
 		}
+		onChange( newReelIndexes );
 	}
 
 	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
 		const newSymbolAmount = Number.parseInt( event.target.value );
-		if ( isPositiveInteger( newSymbolAmount ) ) {
-			const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-			newReelIndexes.forEach( ( reel, index ) => {
-				const newReel: Array<string> = new Array<string>( newSymbolAmount );
-				for ( let i = 0; i < newReel.length; i++ ) {
-					newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
-				}
-				newReelIndexes[ index ] = newReel;
-			} );
-			onChange( newReelIndexes );
-		}
+
+		const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
+		newReelIndexes.forEach( ( reel, index ) => {
+			const newReel: Array<string> = new Array<string>( newSymbolAmount );
+			for ( let i = 0; i < newReel.length; i++ ) {
+				newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
+			}
+			newReelIndexes[ index ] = newReel;
+		} );
+		onChange( newReelIndexes );
+	}
+
+	const titleElement: ReactElement =
+		<Box>
+			<Typography color='textPrimary' variant='h5'>
+				{title}
+			</Typography>
+		</Box>;
+
+	const getTitleElement = ( value: string | undefined ) => {
+		return value ? titleElement : undefined;
 	}
 
 	return (
 		<Box>
-			<Box>
-				<Typography color='textPrimary' variant='h5'>
-					Spin result {index + 1}
-				</Typography>
-			</Box>
+			{getTitleElement( title )}
 			<Grid container item spacing={2} xs={12}>
 				<Grid item xs={12} md={6}>
-					<TextField type='number' value={reelAmount} fullWidth label='Reel amount' onChange={handleReelAmountChange} />
+					<TextField
+						type='number'
+						label='Reel amount'
+						fullWidth
+						inputProps={{
+							min: 1
+						}}
+						value={reelAmount}
+						onChange={handleReelAmountChange}
+					/>
 				</Grid>
 				<Grid item xs={12} md={6}>
-					<TextField type='number' value={symbolAmount} fullWidth label='Row amount' onChange={handleRowAmountChange} />
+					<TextField
+						type='number'
+						label='Row amount'
+						fullWidth
+						inputProps={{
+							min: 1
+						}}
+						value={symbolAmount}
+						onChange={handleRowAmountChange}
+					/>
 				</Grid>
 			</Grid>
 			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
