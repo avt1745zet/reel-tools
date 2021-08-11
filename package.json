@@ -1,7 +1,7 @@
 {
 	"name": "reeltools",
 	"version": "1.2.0",
-	"description": "",
+	"description": "Some useful tools about reel.",
 	"main": "index.js",
 	"scripts": {
 		"start": "webpack serve --config ./config/webpack.config.dev.ts --open",
@@ -9,7 +9,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "./node_modules/.bin/eslint ./src/**/*"
 	},
-	"author": "",
+	"author": "genesis-shaneW",
 	"license": "ISC",
 	"dependencies": {
 		"@material-ui/core": "^4.12.1",

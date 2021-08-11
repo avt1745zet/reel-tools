@@ -1,8 +1,9 @@
 import React, { FC, ReactElement, useState } from 'react';
-import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField, Tooltip, Fab, Typography } from '@material-ui/core';
+import { Checkbox, FormControlLabel, IconButton, Box, createStyles, Grid, makeStyles, TextField } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
 import { CopyButton } from '../../components/buttons/CopyButton';
+import SlotSettingList from '../../components/slotSettingList/SlotSettingList';
+import { default as Config, IRNGToolCodeGeneratorConfig } from './RNGToolCodeGeneratorConfig';
 
 interface AvailableSymbolSelectorPanelProps {
 	originalSelectOptionList: Array<ISelectStatu>;
@@ -13,103 +14,14 @@ interface AvailableSymbolSelectorPanelProps {
 	onAddNewCustomSymbol ( symbolName: string, defaultChecked: boolean ): void;
 }
 
-interface SlotSettingListProps {
-	availableSymbolList: Array<string>;
-	reelIndexesList: Array<Array<Array<string>>>;
-	onChange ( reelIndexesList: Array<Array<Array<string>>> ): void;
-}
-
-interface SlotSettingProps {
-	title?: string;
-	availableSymbolList: Array<string>;
-	reelIndexes: Array<Array<string>>;
-	onChange ( newReelIndexes: Array<Array<string>> ): void;
-}
-
-interface SelectTableProps {
-	reelAmount: number;
-	symbolAmount: number;
-	availableSymbolList: Array<string>;
-	reelIndexes: Array<Array<string>>;
-	onChange ( posiiton: IVector2, value: string ): void;
-}
-
 interface ResultProps {
 	reelIndexesList: Array<Array<Array<string>>>;
 }
 
-interface IVector2 {
-	x: number;
-	y: number;
-}
-
-interface ISelectStatu {
+export interface ISelectStatu {
 	symbol: string;
 	checked: boolean;
 }
-
-const defaultReelAmount = 5;
-const defaultSymbolAmount = 4;
-
-const defaultSelectIndex = 0;
-const defaultSelectOptionList: Array<ISelectStatu> = [
-	{
-		symbol: 'PIC1',
-		checked: true
-	},
-	{
-		symbol: 'PIC2',
-		checked: true
-	},
-	{
-		symbol: 'PIC3',
-		checked: true
-	},
-	{
-		symbol: 'PIC4',
-		checked: true
-	},
-	{
-		symbol: 'PIC5',
-		checked: false
-	},
-	{
-		symbol: 'PIC6',
-		checked: false
-	},
-	{
-		symbol: 'A',
-		checked: true
-	},
-	{
-		symbol: 'K',
-		checked: true
-	},
-	{
-		symbol: 'Q',
-		checked: true
-	},
-	{
-		symbol: 'J',
-		checked: true
-	},
-	{
-		symbol: 'T',
-		checked: false
-	},
-	{
-		symbol: 'N',
-		checked: false
-	},
-	{
-		symbol: 'WILD',
-		checked: true
-	},
-	{
-		symbol: 'SCATTER',
-		checked: true
-	}
-]
 
 const useStyles = makeStyles( () =>
 	createStyles( {
@@ -119,24 +31,30 @@ const useStyles = makeStyles( () =>
 		formControlLabelWithAddButton: {
 			marginRight: '0px'
 		},
-		divider: {
-			marginBlock: '10px',
-			height: 0
+		slotSetting: {
+			marginBlock: '20px',
+		},
+		slotSettingList: {
+			marginBlock: '20px',
 		}
-	} ),
+	} )
 );
 
+const config: IRNGToolCodeGeneratorConfig = Config;
+
 const RNGToolCodeGenerator: FC = () => {
-	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( defaultSelectOptionList );
+	const classes = useStyles();
+
+	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( config.defaultSelectOptionList );
 	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ { symbol: '', checked: false } ] );
 
-	const [ availableSymbolList, setAvailableSymbolList ] = useState( getCheckedSymbol( defaultSelectOptionList ) );
+	const [ availableSymbolList, setAvailableSymbolList ] = useState( getCheckedSymbol( config.defaultSelectOptionList ) );
 
 	const defaultReelIndexesList: Array<Array<Array<string>>> = new Array<Array<Array<string>>>( 1 );
-	const firstReelIndexes: Array<Array<string>> = new Array<Array<string>>( defaultReelAmount );
-	for ( let reelIndex = 0; reelIndex < defaultReelAmount; reelIndex++ ) {
-		firstReelIndexes[ reelIndex ] = new Array<string>( defaultSymbolAmount );
-		const symbolName = availableSymbolList[ defaultSelectIndex ];
+	const firstReelIndexes: Array<Array<string>> = new Array<Array<string>>( config.defaultReelAmount );
+	for ( let reelIndex = 0; reelIndex < config.defaultReelAmount; reelIndex++ ) {
+		firstReelIndexes[ reelIndex ] = new Array<string>( config.defaultSymbolAmount );
+		const symbolName = availableSymbolList[ config.defaultSelectIndex ];
 		firstReelIndexes[ reelIndex ].fill( symbolName );
 	}
 	defaultReelIndexesList[ 0 ] = firstReelIndexes;
@@ -190,37 +108,44 @@ const RNGToolCodeGenerator: FC = () => {
 		setAvailableSymbolList( newSelectSymbolList )
 	}
 
-	const generateReelIndexesListByAvailableSymbolList: ( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => Array<Array<Array<string>>> =
-		( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ) => {
-			const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
-			newReelIndexesList.forEach( reelIndexes => {
-				reelIndexes.forEach( ( reel, reelIndex ) => {
-					reel.forEach( ( symbol, symbolIndex ) => {
-						const isSymbolOutOfRange = !selectSymbolList.includes( symbol );
-						if ( isSymbolOutOfRange ) {
-							reelIndexes[ reelIndex ][ symbolIndex ] = selectSymbolList[ 0 ];
-						}
-					} )
-				} );
-			} );
-			return newReelIndexesList;
-		}
+	const handleSlotSettingListChange = ( newReelIndexesList: Array<Array<Array<string>>> ) => {
+		setReelIndexesList( newReelIndexesList );
+	}
 
-	const classes = useStyles();
+	const generateReelIndexesListByAvailableSymbolList = ( reelIndexesList: Array<Array<Array<string>>>, selectSymbolList: Array<string> ): Array<Array<Array<string>>> => {
+		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
+		newReelIndexesList.forEach( reelIndexes => {
+			reelIndexes.forEach( ( reel, reelIndex ) => {
+				reel.forEach( ( symbol, symbolIndex ) => {
+					const isSymbolOutOfRange = !selectSymbolList.includes( symbol );
+					if ( isSymbolOutOfRange ) {
+						reelIndexes[ reelIndex ][ symbolIndex ] = selectSymbolList[ 0 ];
+					}
+				} )
+			} );
+		} );
+		return newReelIndexesList;
+	}
 
 	return (
-		<form className={classes.root} >
+		<Box component='form' className={classes.root}>
 			<AvailableSymbolSelectorPanel originalSelectOptionList={originalSelectOptionList} customSelectOptionList={customSelectOptionList}
 				onOriginalCheckedChange={handleOriginalAvailableSymbolCheckedChange}
 				onCustomCheckedChange={handleCustomAvailableSymbolCheckedChange}
 				onCustomSymbolChange={handleCustomAvailableSymbolNameChange}
 				onAddNewCustomSymbol={handleAddNewCustomAvailableSymbol}
 			/>
-			<Divider className={classes.divider} />
-			<SlotSettingList availableSymbolList={availableSymbolList} reelIndexesList={reelIndexesList} onChange={( newReelIndexesList ) => { setReelIndexesList( newReelIndexesList ) }}></SlotSettingList>
-			<Divider className={classes.divider} />
-			<Result reelIndexesList={reelIndexesList}></Result>
-		</form>
+			<SlotSettingList
+				availableSymbolList={availableSymbolList}
+				reelIndexesList={reelIndexesList}
+				slotSettingProps={{
+					className: classes.slotSetting
+				}}
+				onChange={handleSlotSettingListChange}
+				className={classes.slotSettingList}
+			/>
+			<Result reelIndexesList={reelIndexesList} />
+		</Box>
 	);
 };
 
@@ -320,204 +245,6 @@ const AvailableSymbolSelectorPanel: FC<AvailableSymbolSelectorPanelProps> = ( pr
 		{originalCheckboxes}
 		{customCheckboxes}
 	</Grid>;
-}
-
-const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps ) => {
-	const { availableSymbolList, reelIndexesList, onChange } = props;
-
-	const handleSlotSettingChange = ( index: number ) => ( reelIndexes: Array<Array<string>> ) => {
-		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
-		newReelIndexesList[ index ] = reelIndexes;
-		onChange( newReelIndexesList );
-	};
-
-	const handleAddButtonClick = () => {
-		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
-		const lastReelIndexes: Array<Array<string>> = newReelIndexesList[ newReelIndexesList.length - 1 ];
-		const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( lastReelIndexes.length );
-		for ( let reelIndex = 0; reelIndex < newReelIndexes.length; reelIndex++ ) {
-			const symbols = new Array<string>( lastReelIndexes[ reelIndex ].length );
-			for ( let symbolIndex = 0; symbolIndex < symbols.length; symbolIndex++ ) {
-				symbols[ symbolIndex ] = availableSymbolList[ 0 ];
-			}
-			newReelIndexes[ reelIndex ] = symbols;
-		}
-		newReelIndexesList.push( newReelIndexes );
-		onChange( newReelIndexesList );
-	};
-
-	const handleRemoveButtonClick = () => {
-		const newReelIndexesList: Array<Array<Array<string>>> = reelIndexesList.slice();
-		newReelIndexesList.splice( newReelIndexesList.length - 1 );
-		onChange( newReelIndexesList );
-	};
-
-	const slotSettingElements: Array<ReactElement> = reelIndexesList.map( ( reelIndexes, index ) =>
-		<SlotSetting key={index} title={'Spin result ' + ( index + 1 )} availableSymbolList={availableSymbolList} reelIndexes={reelIndexes} onChange={handleSlotSettingChange( index )} />
-	);
-
-	const addButton: ReactElement =
-		<Box display='inline-block' marginX={2}>
-			<Tooltip title='Add Spin Result'>
-				<Fab color='primary' onClick={handleAddButtonClick}>
-					<AddIcon />
-				</Fab>
-			</Tooltip>
-		</Box>;
-
-	const removeButton: ReactElement =
-		<Box display='inline-block' marginX={2}>
-			<Tooltip title='Delete Last Spin Result'>
-				<Fab color='secondary' onClick={handleRemoveButtonClick}>
-					<RemoveIcon />
-				</Fab>
-			</Tooltip>
-		</Box>;
-
-	const getRemoveButton = ( reelIndexesList: Array<Array<Array<string>>> ) => {
-		return reelIndexesList.length > 1 ? removeButton : undefined;
-	}
-
-	const buttons: ReactElement =
-		<Box textAlign='center'>
-			{addButton}
-			{getRemoveButton( reelIndexesList )}
-		</Box>;
-
-	return (
-		<Box>
-			{slotSettingElements}
-			{buttons}
-		</Box>
-	);
-}
-
-const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
-	const { title, availableSymbolList, reelIndexes, onChange } = props;
-
-	const reelAmount = reelIndexes.length;
-	const symbolAmount = reelIndexes[ 0 ].length;
-
-	const classes = useStyles();
-
-	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newReelAmount = Number.parseInt( event.target.value );
-
-		const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
-		for ( let i = 0; i < newReelIndexes.length; i++ ) {
-			newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
-		}
-		onChange( newReelIndexes );
-	}
-
-	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newSymbolAmount = Number.parseInt( event.target.value );
-
-		const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-		newReelIndexes.forEach( ( reel, index ) => {
-			const newReel: Array<string> = new Array<string>( newSymbolAmount );
-			for ( let i = 0; i < newReel.length; i++ ) {
-				newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
-			}
-			newReelIndexes[ index ] = newReel;
-		} );
-		onChange( newReelIndexes );
-	}
-
-	const titleElement: ReactElement =
-		<Box>
-			<Typography color='textPrimary' variant='h5'>
-				{title}
-			</Typography>
-		</Box>;
-
-	const getTitleElement = ( value: string | undefined ) => {
-		return value ? titleElement : undefined;
-	}
-
-	return (
-		<Box>
-			{getTitleElement( title )}
-			<Grid container item spacing={2} xs={12}>
-				<Grid item xs={12} md={6}>
-					<TextField
-						type='number'
-						label='Reel amount'
-						fullWidth
-						inputProps={{
-							min: 1
-						}}
-						value={reelAmount}
-						onChange={handleReelAmountChange}
-					/>
-				</Grid>
-				<Grid item xs={12} md={6}>
-					<TextField
-						type='number'
-						label='Row amount'
-						fullWidth
-						inputProps={{
-							min: 1
-						}}
-						value={symbolAmount}
-						onChange={handleRowAmountChange}
-					/>
-				</Grid>
-			</Grid>
-			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
-				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-				newReelIndexes[ position.x ][ position.y ] = value;
-				onChange( newReelIndexes );
-			}} />
-			<Divider className={classes.divider} />
-		</Box>
-	);
-}
-
-const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
-	const { reelAmount, symbolAmount, availableSymbolList, reelIndexes, onChange } = props;
-
-	const tableElements: Array<ReactElement> = [];
-	for ( let symbolIndex = 0; symbolIndex < symbolAmount; symbolIndex++ ) {
-		const rowElements: Array<ReactElement> = [];
-		for ( let reelIndex = 0; reelIndex < reelAmount; reelIndex++ ) {
-			const options: Array<ReactElement> = [];
-			availableSymbolList.forEach( ( symbol, index ) => {
-				options.push(
-					<MenuItem key={index} value={symbol}>{symbol}</MenuItem>
-				);
-			} )
-			const handleSelectChange = ( position: IVector2 ) => ( event: React.ChangeEvent<{
-				name?: string | undefined;
-				value: unknown;
-			}> ) => {
-				const symbol: string = event.target.value as string;
-				onChange( position, symbol );
-			};
-			rowElements.push(
-				<Grid item xs key={reelIndex}>
-					<FormControl style={{ width: '100%' }}>
-						<Select
-							value={reelIndexes[ reelIndex ][ symbolIndex ]}
-							onChange={handleSelectChange( { x: reelIndex, y: symbolIndex } )}
-						>
-							{options}
-						</Select>
-					</FormControl>
-				</Grid>
-			);
-		}
-		const row: ReactElement =
-			<Grid container item xs={12} key={symbolIndex}>
-				{rowElements}
-			</Grid>;
-		tableElements.push( row );
-	}
-	return (
-		<Grid container item spacing={2} xs={12}>
-			{tableElements}
-		</Grid>
-	);
 }
 
 const Result: FC<ResultProps> = ( props: ResultProps ) => {
