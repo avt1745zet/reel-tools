@@ -60,12 +60,13 @@ const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
 		}
 	}
 
-	const titleElement: ReactElement =
+	const titleElement: ReactElement = (
 		<Box>
 			<Typography color='textPrimary' variant='h5'>
 				{title}
 			</Typography>
-		</Box>;
+		</Box>
+	);
 
 	const getTitleElement = ( value: string | undefined ) => {
 		return value ? titleElement : undefined;
@@ -145,10 +146,11 @@ const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
 				</Grid>
 			);
 		}
-		const row: ReactElement =
+		const row: ReactElement = (
 			<Grid container item xs={12} key={symbolIndex}>
 				{rowElements}
-			</Grid>;
+			</Grid>
+		);
 		tableElements.push( row );
 	}
 	return (
