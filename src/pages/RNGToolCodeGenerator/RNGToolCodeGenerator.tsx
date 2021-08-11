@@ -1,8 +1,9 @@
 import React, { FC, ReactElement, useState } from 'react';
-import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, MenuItem, Select, Box, createStyles, Grid, makeStyles, TextField, Tooltip, Fab, Typography } from '@material-ui/core';
+import { Checkbox, Divider, FormControlLabel, IconButton, Box, createStyles, Grid, makeStyles, TextField, Tooltip, Fab } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { CopyButton } from '../../components/buttons/CopyButton';
+import SlotSetting from '../../components/slotSetting/SlotSetting';
 
 interface AvailableSymbolSelectorPanelProps {
 	originalSelectOptionList: Array<ISelectStatu>;
@@ -19,28 +20,8 @@ interface SlotSettingListProps {
 	onChange ( reelIndexesList: Array<Array<Array<string>>> ): void;
 }
 
-interface SlotSettingProps {
-	title?: string;
-	availableSymbolList: Array<string>;
-	reelIndexes: Array<Array<string>>;
-	onChange ( newReelIndexes: Array<Array<string>> ): void;
-}
-
-interface SelectTableProps {
-	reelAmount: number;
-	symbolAmount: number;
-	availableSymbolList: Array<string>;
-	reelIndexes: Array<Array<string>>;
-	onChange ( posiiton: IVector2, value: string ): void;
-}
-
 interface ResultProps {
 	reelIndexesList: Array<Array<Array<string>>>;
-}
-
-interface IVector2 {
-	x: number;
-	y: number;
 }
 
 interface ISelectStatu {
@@ -353,7 +334,13 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 	};
 
 	const slotSettingElements: Array<ReactElement> = reelIndexesList.map( ( reelIndexes, index ) =>
-		<SlotSetting key={index} title={'Spin result ' + ( index + 1 )} availableSymbolList={availableSymbolList} reelIndexes={reelIndexes} onChange={handleSlotSettingChange( index )} />
+		<SlotSetting
+			key={index}
+			title={'Spin result ' + ( index + 1 )}
+			availableSymbolList={availableSymbolList}
+			reelIndexes={reelIndexes}
+			onChange={handleSlotSettingChange( index )}
+		/>
 	);
 
 	const addButton: ReactElement =
@@ -389,134 +376,6 @@ const SlotSettingList: FC<SlotSettingListProps> = ( props: SlotSettingListProps 
 			{slotSettingElements}
 			{buttons}
 		</Box>
-	);
-}
-
-const SlotSetting: FC<SlotSettingProps> = ( props: SlotSettingProps ) => {
-	const { title, availableSymbolList, reelIndexes, onChange } = props;
-
-	const reelAmount = reelIndexes.length;
-	const symbolAmount = reelIndexes[ 0 ].length;
-
-	const classes = useStyles();
-
-	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newReelAmount = Number.parseInt( event.target.value );
-
-		const newReelIndexes: Array<Array<string>> = new Array<Array<string>>( newReelAmount );
-		for ( let i = 0; i < newReelIndexes.length; i++ ) {
-			newReelIndexes[ i ] = reelIndexes[ i ] ? reelIndexes[ i ] : newReelIndexes[ 0 ].map( () => availableSymbolList[ 0 ] );
-		}
-		onChange( newReelIndexes );
-	}
-
-	const handleRowAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-		const newSymbolAmount = Number.parseInt( event.target.value );
-
-		const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-		newReelIndexes.forEach( ( reel, index ) => {
-			const newReel: Array<string> = new Array<string>( newSymbolAmount );
-			for ( let i = 0; i < newReel.length; i++ ) {
-				newReel[ i ] = reel[ i ] ? reel[ i ] : availableSymbolList[ 0 ];
-			}
-			newReelIndexes[ index ] = newReel;
-		} );
-		onChange( newReelIndexes );
-	}
-
-	const titleElement: ReactElement =
-		<Box>
-			<Typography color='textPrimary' variant='h5'>
-				{title}
-			</Typography>
-		</Box>;
-
-	const getTitleElement = ( value: string | undefined ) => {
-		return value ? titleElement : undefined;
-	}
-
-	return (
-		<Box>
-			{getTitleElement( title )}
-			<Grid container item spacing={2} xs={12}>
-				<Grid item xs={12} md={6}>
-					<TextField
-						type='number'
-						label='Reel amount'
-						fullWidth
-						inputProps={{
-							min: 1
-						}}
-						value={reelAmount}
-						onChange={handleReelAmountChange}
-					/>
-				</Grid>
-				<Grid item xs={12} md={6}>
-					<TextField
-						type='number'
-						label='Row amount'
-						fullWidth
-						inputProps={{
-							min: 1
-						}}
-						value={symbolAmount}
-						onChange={handleRowAmountChange}
-					/>
-				</Grid>
-			</Grid>
-			<SelectsTable reelIndexes={reelIndexes} reelAmount={reelAmount} symbolAmount={symbolAmount} availableSymbolList={availableSymbolList} onChange={( position, value ) => {
-				const newReelIndexes: Array<Array<string>> = reelIndexes.slice();
-				newReelIndexes[ position.x ][ position.y ] = value;
-				onChange( newReelIndexes );
-			}} />
-			<Divider className={classes.divider} />
-		</Box>
-	);
-}
-
-const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
-	const { reelAmount, symbolAmount, availableSymbolList, reelIndexes, onChange } = props;
-
-	const tableElements: Array<ReactElement> = [];
-	for ( let symbolIndex = 0; symbolIndex < symbolAmount; symbolIndex++ ) {
-		const rowElements: Array<ReactElement> = [];
-		for ( let reelIndex = 0; reelIndex < reelAmount; reelIndex++ ) {
-			const options: Array<ReactElement> = [];
-			availableSymbolList.forEach( ( symbol, index ) => {
-				options.push(
-					<MenuItem key={index} value={symbol}>{symbol}</MenuItem>
-				);
-			} )
-			const handleSelectChange = ( position: IVector2 ) => ( event: React.ChangeEvent<{
-				name?: string | undefined;
-				value: unknown;
-			}> ) => {
-				const symbol: string = event.target.value as string;
-				onChange( position, symbol );
-			};
-			rowElements.push(
-				<Grid item xs key={reelIndex}>
-					<FormControl style={{ width: '100%' }}>
-						<Select
-							value={reelIndexes[ reelIndex ][ symbolIndex ]}
-							onChange={handleSelectChange( { x: reelIndex, y: symbolIndex } )}
-						>
-							{options}
-						</Select>
-					</FormControl>
-				</Grid>
-			);
-		}
-		const row: ReactElement =
-			<Grid container item xs={12} key={symbolIndex}>
-				{rowElements}
-			</Grid>;
-		tableElements.push( row );
-	}
-	return (
-		<Grid container item spacing={2} xs={12}>
-			{tableElements}
-		</Grid>
 	);
 }
 
