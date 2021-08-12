@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { makeStyles, createStyles, Box, Divider } from '@material-ui/core';
-import { ISymbolPayoutData, SymbolType } from '../../core/BasicDataInterfaces';
+import { ISymbolPayoutData } from '../../core/BasicDataInterfaces';
 import SlotSetting from '../../components/slotSetting/SlotSetting';
 import { default as AvailableSymbolSelector, ISymbolOptionData } from './components/availableSymbolSelector/WayGamePayoutAvailableSymbolSelector';
 import { default as Result } from './components/result/WayGamePayoutResult';
@@ -26,7 +26,7 @@ const config: IWayGamePayoutCalculatorConfig = Config;
 
 const WayGamePayoutCalculator: FC = () => {
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( config.defaultSelectOptionList );
-	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( config.defaultCustomOptionList );
+	const [ customSelectOptionList, setCustomSelectOptionList ] = useState( [ config.defaultCustomOptionData ] );
 
 	const [ availableSymbolPayoutMap, setAvailableSymbolPayoutMap ] = useState( getCheckedSymbolInfos( config.defaultSelectOptionList ) );
 
@@ -91,15 +91,7 @@ const WayGamePayoutCalculator: FC = () => {
 				const lastIndex = newCustomSelectOptionList.length - 1;
 
 				newCustomSelectOptionList[ lastIndex ].checked = true;
-				newCustomSelectOptionList.push( {
-					symbol: '',
-					checked: false,
-					payoutData: {
-						atleastKind: 3,
-						kindMultiplierMap: new Map( [] ),
-						symbolType: SymbolType.NORMAL
-					}
-				} );
+				newCustomSelectOptionList.push( config.defaultCustomOptionData );
 				setCustomSelectOptionList( newCustomSelectOptionList );
 
 				const newAvailableSymbolPayoutMap: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>( [

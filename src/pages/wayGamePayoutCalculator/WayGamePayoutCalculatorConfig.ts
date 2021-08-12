@@ -7,7 +7,7 @@ export interface IWayGamePayoutCalculatorConfig {
 	defaultBet: number;
 	defaultSelectIndex: number;
 	defaultSelectOptionList: Array<ISymbolOptionData>;
-	defaultCustomOptionList: Array<ISymbolOptionData>;
+	defaultCustomOptionData: ISymbolOptionData;
 }
 
 const WayGamePayoutCalculatorConfig: IWayGamePayoutCalculatorConfig = {
@@ -203,17 +203,19 @@ const WayGamePayoutCalculatorConfig: IWayGamePayoutCalculatorConfig = {
 			}
 		}
 	],
-	defaultCustomOptionList: [
-		{
-			symbol: '',
-			checked: false,
-			payoutData: {
-				atleastKind: 3,
-				kindMultiplierMap: new Map( [] ),
-				symbolType: SymbolType.NORMAL
-			}
+	defaultCustomOptionData: {
+		symbol: '',
+		checked: false,
+		payoutData: {
+			atleastKind: 3,
+			kindMultiplierMap: new Map( [
+				[ 3, 0 ],
+				[ 4, 0 ],
+				[ 5, 0 ]
+			] ),
+			symbolType: SymbolType.NORMAL
 		}
-	]
+	}
 }
 
 export default WayGamePayoutCalculatorConfig;

@@ -73,18 +73,6 @@ const WayGamePayoutAvailableSymbolSelector: FC<AvailableSymbolSelectorPanelProps
 			} );
 		};
 
-		const handleSymbolTypeChange = ( index: number, symbolType: SymbolType ) => ( event: ChangeEvent<HTMLInputElement>, checked: boolean ) => {
-			const newSmbolType: SymbolType = checked ? symbolType : SymbolType.NORMAL;
-
-			onOriginalOptionDataChange( index, {
-				...optionData,
-				payoutData: {
-					...optionData.payoutData,
-					symbolType: newSmbolType
-				}
-			} );
-		};
-
 		const payoutElements: Array<ReactElement> = [];
 		const payoutData: ISymbolPayoutData = optionData.payoutData;
 
@@ -105,47 +93,26 @@ const WayGamePayoutAvailableSymbolSelector: FC<AvailableSymbolSelectorPanelProps
 		return (
 			<Grid item key={optionIndex} xs={12} sm={6} md={4} lg={3} xl={2}>
 				<Paper className={classes.selectOptionPaper}>
-					<FormControlLabel
-						control={
-							<Checkbox
-								color='primary'
-								checked={optionData.checked}
-								onChange={handleCheckboxChange( optionIndex )}
-							/>
-						}
-						label={optionData.symbol}
-					/>
-					<TextField
-						fullWidth
-						label='Atleast kind'
-						type='number'
-						value={optionData.payoutData.atleastKind}
-						onChange={handleAtleastKindChange( optionIndex )}
-					/>
+					<Box display='flex' justifyContent='space-between'>
+						<FormControlLabel
+							control={
+								<Checkbox
+									color='primary'
+									checked={optionData.checked}
+									onChange={handleCheckboxChange( optionIndex )}
+								/>
+							}
+							label={optionData.symbol}
+						/>
+						<TextField
+							label='At least kind'
+							type='number'
+							value={optionData.payoutData.atleastKind}
+							onChange={handleAtleastKindChange( optionIndex )}
+						/>
+					</Box>
 					<FormGroup>
 						{payoutElements}
-					</FormGroup>
-					<FormGroup row>
-						<FormControlLabel
-							control={
-								<Checkbox
-									color='primary'
-									checked={optionData.payoutData.symbolType === SymbolType.WILD}
-									onChange={handleSymbolTypeChange( optionIndex, SymbolType.WILD )}
-								/>
-							}
-							label='Is Wild?'
-						/>
-						<FormControlLabel
-							control={
-								<Checkbox
-									color='primary'
-									checked={optionData.payoutData.symbolType === SymbolType.SCATTER}
-									onChange={handleSymbolTypeChange( optionIndex, SymbolType.SCATTER )}
-								/>
-							}
-							label='Is Scatter?'
-						/>
 					</FormGroup>
 				</Paper>
 			</Grid>
@@ -225,31 +192,33 @@ const WayGamePayoutAvailableSymbolSelector: FC<AvailableSymbolSelectorPanelProps
 		}
 
 		return (
-			<Grid item key={'custom' + optionIndex} xs={12} sm={6} md={4} lg={2}>
+			<Grid item key={'custom' + optionIndex} xs={12} sm={6} md={4} lg={3} xl={2}>
 				<Paper className={classes.selectOptionPaper}>
-					<FormControlLabel
-						control={<Checkbox
-							key='checkbox'
-							color='primary'
-							checked={optionData.checked}
-							onChange={handleCheckboxChange( optionIndex )}
-							disabled={optionData.symbol === ''}
-						/>}
-						label={<TextField
-							key='textField'
-							label='Custom symbol'
-							placeholder='Define symbol...'
-							value={optionData.symbol}
-							onChange={handleSymbolNameChange( optionIndex )}
-						/>}
-					/>
-					<TextField
-						fullWidth
-						label='Atleast kind'
-						type='number'
-						value={optionData.payoutData.atleastKind}
-						onChange={handleAtleastKindChange( optionIndex )}
-					/>
+					<Box display='flex' justifyContent='space-between'>
+						<FormControlLabel
+							control={<Checkbox
+								key='checkbox'
+								color='primary'
+								checked={optionData.checked}
+								onChange={handleCheckboxChange( optionIndex )}
+								disabled={optionData.symbol === ''}
+							/>}
+							label={<TextField
+								key='textField'
+								label='Custom'
+								placeholder='Define symbol...'
+								value={optionData.symbol}
+								onChange={handleSymbolNameChange( optionIndex )}
+							/>}
+						/>
+						<TextField
+							fullWidth
+							label='At least kind'
+							type='number'
+							value={optionData.payoutData.atleastKind}
+							onChange={handleAtleastKindChange( optionIndex )}
+						/>
+					</Box>
 					<FormGroup>
 						{payoutElements}
 					</FormGroup>
