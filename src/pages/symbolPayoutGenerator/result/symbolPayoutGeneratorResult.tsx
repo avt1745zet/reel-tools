@@ -43,7 +43,7 @@ const SymbolPayoutGeneratorResult: FC<SymbolPayoutGeneratorResultProps> = ( prop
 		<Box>
 			<TextField
 				variant='filled'
-				label='Output'
+				label='NGF format payout setting'
 				fullWidth
 				multiline
 				id='symbolPayoutGeneratorResult'
