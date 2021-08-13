@@ -6,9 +6,10 @@ import { BrowserRouter as Router, Route, useHistory } from 'react-router-dom';
 import ExcelReelStripsConverter from './pages/excelReelStripsConverter/ExcelReelStripsConverter';
 import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
 import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
+import SymbolPayoutGenerator from './pages/symbolPayoutGenerator/SymbolPayoutGenerator';
+import WayGamePayoutCalculator from './pages/wayGamePayoutCalculator/WayGamePayoutCalculator';
 
 import packageJson from '../package.json';
-import WayGamePayoutCalculator from './pages/wayGamePayoutCalculator/WayGamePayoutCalculator';
 
 interface TabPanelProps extends BoxProps {
 	/**
@@ -43,7 +44,7 @@ const useStyles = makeStyles( ( theme ) =>
 	} )
 );
 
-const tabCount = 4;
+const tabCount = 5;
 
 const defaultTheme = createTheme( {
 	palette: {
@@ -159,6 +160,13 @@ export const App: FC = () => {
 										currentIndex={tabIndex}
 										className={classes.tabPanel}
 									>
+										<SymbolPayoutGeneratorTabContent />
+									</TabPanel>
+									<TabPanel
+										index={4}
+										currentIndex={tabIndex}
+										className={classes.tabPanel}
+									>
 										<WayGamePayoutCalculatorTabContent />
 									</TabPanel>
 									<TabPanel
@@ -215,6 +223,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 					<Tab label='Convertor' />
 					<Tab label='Crypto' />
 					<Tab label='RNG Tool' />
+					<Tab label='Symbol Payout Generator' />
 					<Tab label='Way Game Payout Calculator' />
 				</Tabs>
 			</Hidden>
@@ -229,6 +238,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 						<Tab label='Convertor' />
 						<Tab label='Crypto' />
 						<Tab label='RNG Tool' />
+						<Tab label='Symbol Payout Generator' />
 						<Tab label='Way Game Payout Calculator' />
 					</Tabs>
 				</Drawer>
@@ -274,6 +284,14 @@ export const RNGToolGeneratorTabContent: FC = () => {
 	return (
 		<Box>
 			<RNGToolCodeGenerator />
+		</Box>
+	);
+};
+
+export const SymbolPayoutGeneratorTabContent: FC = () => {
+	return (
+		<Box>
+			<SymbolPayoutGenerator />
 		</Box>
 	);
 };
