@@ -3,6 +3,7 @@ import { CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, createThem
 import MenuIcon from '@material-ui/icons/Menu';
 import { HashRouter, Route, Switch, useHistory } from 'react-router-dom';
 
+import HomePage from './pages/home/HomePage';
 import ExcelReelStripsConverter from './pages/excelReelStripsConverter/ExcelReelStripsConverter';
 import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
 import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
@@ -107,12 +108,13 @@ export const App: FC = () => {
 					<NavMenu isOpen={isMenuOpen} onClick={handleMenuClick} />
 					<Box component='main' className={classes.main} role='main'>
 						<Switch>
+							<Route exact path='/' component={HomePage} />
 							<Route path='/tool/0' component={ExcelReelStripsConverter} />
 							<Route path='/tool/1' component={JsonFormatCryptor} />
 							<Route path='/tool/2' component={RNGToolCodeGenerator} />
 							<Route path='/tool/3' component={SymbolPayoutGenerator} />
 							<Route path='/tool/4' component={WayGamePayoutCalculator} />
-							<Route path='/tool' component={NotFoundPage} />
+							<Route path='*' component={NotFoundPage} />
 						</Switch>
 					</Box>
 				</HashRouter>
@@ -153,7 +155,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 	];
 
 	return (
-		<Route path='/tool/' render={( props ) => {
+		<Route path='*' render={( props ) => {
 			let currentIndex: number | boolean = [
 				'/tool/0',
 				'/tool/1',
