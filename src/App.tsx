@@ -19,6 +19,9 @@ const useStyles = makeStyles( ( theme ) =>
 			position: 'relative',
 			height: '100vh',
 		},
+		nav: {
+			borderRight: `1px solid ${ theme.palette.divider }`
+		},
 		tabs: {
 			borderRight: `1px solid ${ theme.palette.divider }`,
 			marginTop: 74
@@ -141,15 +144,6 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 		onClick();
 	}
 
-	let currentIndex: number | boolean = [
-		'/tool/0',
-		'/tool/1',
-		'/tool/2',
-		'/tool/3',
-		'/tool/4'
-	].indexOf( history.location.pathname );
-	currentIndex = currentIndex === -1 ? false : currentIndex;
-
 	const tabElements: Array<ReactElement> = [
 		<Tab key='0' label='Convertor' />,
 		<Tab key='1' label='Crypto' />,
@@ -159,24 +153,37 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 	];
 
 	return (
-		<Box component='nav'>
-			<Hidden smDown>
-				<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} aria-label='nav-tabs' orientation='vertical'>
-					{tabElements}
-				</Tabs>
-			</Hidden>
-			<Hidden mdUp>
-				<Drawer
-					variant='temporary'
-					anchor='left'
-					open={isOpen}
-					onClick={handleDrawerClick}
-				>
-					<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} centered={true} orientation='vertical' aria-label='nav-tabs'>
-						{tabElements}
-					</Tabs>
-				</Drawer>
-			</Hidden>
-		</Box>
+		<Route path='/tool/' render={( props ) => {
+			let currentIndex: number | boolean = [
+				'/tool/0',
+				'/tool/1',
+				'/tool/2',
+				'/tool/3',
+				'/tool/4'
+			].indexOf( props.location.pathname );
+			currentIndex = currentIndex === -1 ? false : currentIndex;
+
+			return (
+				<Box component='nav' className={classes.nav}>
+					<Hidden smDown>
+						<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} aria-label='nav-tabs' orientation='vertical'>
+							{tabElements}
+						</Tabs>
+					</Hidden>
+					<Hidden mdUp>
+						<Drawer
+							variant='temporary'
+							anchor='left'
+							open={isOpen}
+							onClick={handleDrawerClick}
+						>
+							<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} centered={true} orientation='vertical' aria-label='nav-tabs'>
+								{tabElements}
+							</Tabs>
+						</Drawer>
+					</Hidden>
+				</Box>
+			);
+		}} />
 	);
 };
