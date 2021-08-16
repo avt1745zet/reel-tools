@@ -1,5 +1,5 @@
 import React, { FC, Fragment, useState } from 'react';
-import { createStyles, Divider, makeStyles, TextField, Typography } from '@material-ui/core';
+import { Box, createStyles, Divider, makeStyles, TextField, Typography } from '@material-ui/core';
 import { CopyButton } from '../../components/buttons/CopyButton';
 
 interface ResultProps {
@@ -144,7 +144,7 @@ const ExcelReelStripsConverter: FC = () => {
 	const classes = useStyles();
 
 	return (
-		<form className={classes.root} >
+		<Box component='form' className={classes.root} >
 			<TextField
 				fullWidth
 				multiline
@@ -184,7 +184,7 @@ const ExcelReelStripsConverter: FC = () => {
 			<Causion isLegalFormat={isLegalFormat} />
 			<Divider className={classes.divider} />
 			<Result message={convertString} />
-		</form>
+		</Box>
 	);
 };
 
