@@ -137,7 +137,7 @@ const SelectsTable: FC<SelectTableProps> = ( props: SelectTableProps ) => {
 				<Grid item xs key={reelIndex}>
 					<FormControl style={{ width: '100%' }}>
 						<Select
-							value={reelIndexes[ reelIndex ][ symbolIndex ]}
+							value={reelIndexes[ reelIndex ][ symbolIndex ] ? reelIndexes[ reelIndex ][ symbolIndex ] : 'undefined'}
 							onChange={handleSelectChange( { x: reelIndex, y: symbolIndex } )}
 						>
 							{options}
