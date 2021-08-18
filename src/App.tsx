@@ -1,24 +1,17 @@
-import React, { FC, useState } from 'react';
-import { BoxProps, CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, createTheme, makeStyles, Tab, Tabs, ThemeProvider, IconButton, Hidden, Drawer } from '@material-ui/core';
+import React, { FC, ReactElement, useState } from 'react';
+import { CssBaseline, Typography, Toolbar, AppBar, Box, createStyles, createTheme, makeStyles, Tab, Tabs, ThemeProvider, IconButton, Hidden, Drawer } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import { BrowserRouter as Router, Route, useHistory } from 'react-router-dom';
+import { HashRouter, Route, Switch, useHistory } from 'react-router-dom';
 
-import { ReelConvertArea } from './components/ReelConverter';
-import { JsonCryptor } from './components/JsonCryptor';
-import { RNGToolGenerator } from './components/RNGToolGenerator';
+import HomePage from './pages/home/HomePage';
+import ExcelReelStripsConverter from './pages/excelReelStripsConverter/ExcelReelStripsConverter';
+import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
+import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
+import SymbolPayoutGenerator from './pages/symbolPayoutGenerator/SymbolPayoutGenerator';
+import WayGamePayoutCalculator from './pages/wayGamePayoutCalculator/WayGamePayoutCalculator';
+import NotFoundPage from './pages/notFound/notFoundPage';
 
 import packageJson from '../package.json';
-
-interface TabPanelProps extends BoxProps {
-	/**
-	 * The index of specified TabPanel.
-	 */
-	index: number;
-	/**
-	 * The current index of Tabs.
-	 */
-	currentIndex: number;
-}
 
 const useStyles = makeStyles( ( theme ) =>
 	createStyles( {
@@ -27,6 +20,9 @@ const useStyles = makeStyles( ( theme ) =>
 			position: 'relative',
 			height: '100vh',
 		},
+		nav: {
+			borderRight: `1px solid ${ theme.palette.divider }`
+		},
 		tabs: {
 			borderRight: `1px solid ${ theme.palette.divider }`,
 			marginTop: 74
@@ -34,15 +30,11 @@ const useStyles = makeStyles( ( theme ) =>
 		main: {
 			flex: '1',
 			marginTop: 60,
-			overflow: 'auto'
-		},
-		tabPanel: {
+			overflow: 'auto',
 			padding: 30
 		}
 	} )
 );
-
-const tabCount = 3;
 
 const defaultTheme = createTheme( {
 	palette: {
@@ -70,119 +62,76 @@ export const App: FC = () => {
 	const classes = useStyles();
 
 	return (
-		<Router>
-			<ThemeProvider
-				theme={defaultTheme}>
-				<CssBaseline />
-				<Box>
-					<AppBar>
-						<Toolbar>
-							<Hidden mdUp>
-								<IconButton
-									color='inherit'
-									edge="start"
-									onClick={handleMenuButtonClick}
-								>
-									<MenuIcon />
-								</IconButton>
-							</Hidden>
-							<Box>
-								<Typography
-									style={{
-										color: 'white'
-									}}
-									variant='h3'
-									display='inline'
-								>
-									Reel Tools
-								</Typography >
-								<Typography
-									style={{
-										color: 'white'
-									}}
-									variant='caption'
-									display='inline'
-								>
-									※A useful tool abount reel.
-								</Typography >
-							</Box>
-							<Box style={{ marginLeft: 'auto', marginRight: '5px', marginBlock: 'auto', color: 'skyblue' }}>
-								<Typography>
-									Version: {packageJson.version}
-								</Typography >
-							</Box>
-						</Toolbar>
-					</AppBar>
-
-					<Route path='/' render={( { location } ) => {
-						let tabURLParam = new URLSearchParams( location.search ).get( 'tab' );
-						if ( !tabURLParam ) {
-							tabURLParam = ( 0 ).toString();
-						}
-
-						let isValidedTabParam = true;
-						let tabIndex = Number.parseInt( tabURLParam );
-
-						if ( Number.isNaN( tabIndex ) || tabIndex < 0 || tabIndex >= tabCount ) {
-							isValidedTabParam = false;
-							tabIndex = 404;
-						}
-
-						return (
-							<Box className={classes.root}>
-								<NavMenu currentIndex={isValidedTabParam ? tabIndex : false} isOpen={isMenuOpen} onClick={handleMenuClick} />
-								<Box component='main' className={classes.main} role='main'>
-									<TabPanel
-										index={0}
-										currentIndex={tabIndex}
-										className={classes.tabPanel}
-									>
-										<ReelConvertTabContent />
-									</TabPanel>
-									<TabPanel
-										index={1}
-										currentIndex={tabIndex}
-										className={classes.tabPanel}
-									>
-										<CryptoTabContent />
-									</TabPanel>
-									<TabPanel
-										index={2}
-										currentIndex={tabIndex}
-										className={classes.tabPanel}
-									>
-										<RNGToolGeneratorTabContent />
-									</TabPanel>
-									<TabPanel
-										index={404}
-										currentIndex={tabIndex}
-										className={classes.tabPanel}
-									>
-										<Typography variant='h2'>
-											ERROR 404
-										</Typography >
-										<Typography variant='body1'>
-											This page not found :(
-										</Typography >
-									</TabPanel>
-								</Box>
-							</Box>
-						);
-					}} />
+		<ThemeProvider
+			theme={defaultTheme}>
+			<CssBaseline />
+			<AppBar>
+				<Toolbar>
+					<Hidden mdUp>
+						<IconButton
+							color='inherit'
+							edge="start"
+							onClick={handleMenuButtonClick}
+						>
+							<MenuIcon />
+						</IconButton>
+					</Hidden>
+					<Box>
+						<Typography
+							style={{
+								color: 'white'
+							}}
+							variant='h3'
+							display='inline'
+						>
+							Reel Tools
+						</Typography >
+						<Typography
+							style={{
+								color: 'white'
+							}}
+							variant='caption'
+							display='inline'
+						>
+							※A useful tool abount reel.
+						</Typography >
+					</Box>
+					<Box style={{ marginLeft: 'auto', marginRight: '5px', marginBlock: 'auto', color: 'skyblue' }}>
+						<Typography>
+							Version: {packageJson.version}
+						</Typography >
+					</Box>
+				</Toolbar>
+			</AppBar>
+			<Box className={classes.root}>
+				<HashRouter>
+					<NavMenu isOpen={isMenuOpen} onClick={handleMenuClick} />
+				</HashRouter>
+				<Box component='main' className={classes.main} role='main'>
+					<HashRouter>
+						<Switch>
+							<Route exact path='/' component={HomePage} />
+							<Route path='/tool/0' component={ExcelReelStripsConverter} />
+							<Route path='/tool/1' component={JsonFormatCryptor} />
+							<Route path='/tool/2' component={RNGToolCodeGenerator} />
+							<Route path='/tool/3' component={SymbolPayoutGenerator} />
+							<Route path='/tool/4' component={WayGamePayoutCalculator} />
+							<Route path='*' component={NotFoundPage} />
+						</Switch>
+					</HashRouter>
 				</Box>
-			</ThemeProvider>
-		</Router>
+			</Box>
+		</ThemeProvider>
 	);
 }
 
 interface NavMenuProps {
-	currentIndex: number | boolean;
 	isOpen: boolean;
 	onClick (): void;
 }
 
 export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
-	const { currentIndex, isOpen, onClick } = props;
+	const { isOpen, onClick } = props;
 
 	const history = useHistory();
 
@@ -190,8 +139,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 
 	const handleChange = ( event: React.ChangeEvent<unknown>, value: number ) => {
 		const location = {
-			pathname: history.location.pathname,
-			search: `tab=${ value }`
+			pathname: `/tool/${ value }`
 		};
 		history.push( location );
 	};
@@ -200,70 +148,46 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 		onClick();
 	}
 
-	return (
-		<nav>
-			<Hidden smDown>
-				<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} aria-label='nav-tabs' orientation='vertical'>
-					<Tab label='Convertor' />
-					<Tab label='Crypto' />
-					<Tab label='RNG Tool' />
-				</Tabs>
-			</Hidden>
-			<Hidden mdUp>
-				<Drawer
-					variant='temporary'
-					anchor='left'
-					open={isOpen}
-					onClick={handleDrawerClick}
-				>
-					<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} centered={true} orientation='vertical' aria-label='nav-tabs'>
-						<Tab label='Convertor' />
-						<Tab label='Crypto' />
-						<Tab label='RNG Tool' />
-					</Tabs>
-				</Drawer>
-			</Hidden>
-		</nav>
-	);
-};
+	const tabElements: Array<ReactElement> = [
+		<Tab key='0' label='Convertor' />,
+		<Tab key='1' label='Crypto' />,
+		<Tab key='2' label='RNG Tool' />,
+		<Tab key='3' label='NGF Symbol Payout Generator' />,
+		<Tab key='4' label='Way Game Payout Calculator' />
+	];
 
-export const TabPanel: FC<TabPanelProps> = ( props: TabPanelProps ) => {
-	const { index, currentIndex, className, children } = props;
-
-	const visible = currentIndex === index;
 	return (
-		<Box
-			className={className}
-			role='tabpanel'
-			id={`tab-panel-${ index }`}
-			aria-labelledby={`tab-panel-${ index }`}
-			hidden={!visible}
-		>
-			{children}
-		</Box>
-	);
-};
+		<Route path='*' render={( props ) => {
+			let currentIndex: number | boolean = [
+				'/tool/0',
+				'/tool/1',
+				'/tool/2',
+				'/tool/3',
+				'/tool/4'
+			].indexOf( props.location.pathname );
+			currentIndex = currentIndex === -1 ? false : currentIndex;
 
-export const ReelConvertTabContent: FC = () => {
-	return (
-		<Box>
-			<ReelConvertArea />
-		</Box>
-	);
-};
-
-export const CryptoTabContent: FC = () => {
-	return (
-		<Box>
-			<JsonCryptor />
-		</Box>
-	);
-};
-
-export const RNGToolGeneratorTabContent: FC = () => {
-	return (
-		<Box>
-			<RNGToolGenerator />
-		</Box>
+			return (
+				<Box component='nav' className={classes.nav}>
+					<Hidden smDown>
+						<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} aria-label='nav-tabs' orientation='vertical'>
+							{tabElements}
+						</Tabs>
+					</Hidden>
+					<Hidden mdUp>
+						<Drawer
+							variant='temporary'
+							anchor='left'
+							open={isOpen}
+							onClick={handleDrawerClick}
+						>
+							<Tabs value={currentIndex} className={classes.tabs} onChange={handleChange} centered={true} orientation='vertical' aria-label='nav-tabs'>
+								{tabElements}
+							</Tabs>
+						</Drawer>
+					</Hidden>
+				</Box>
+			);
+		}} />
 	);
 };

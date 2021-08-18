@@ -1,6 +1,6 @@
 import React, { FC, Fragment, useState } from 'react';
-import { createStyles, Divider, makeStyles, TextField, Typography } from '@material-ui/core';
-import { CopyButton } from './CopyButton';
+import { Box, createStyles, Divider, makeStyles, TextField, Typography } from '@material-ui/core';
+import { CopyButton } from '../../components/buttons/CopyButton';
 
 interface ResultProps {
 	message: string;
@@ -137,14 +137,14 @@ const useStyles = makeStyles( () =>
 	} )
 );
 
-export const ReelConvertArea: FC = () => {
+const ExcelReelStripsConverter: FC = () => {
 	const [ convertString, setConvertString ] = useState( '' );
 	const [ isLegalFormat, setIsLegalFormat ] = useState( true );
 
 	const classes = useStyles();
 
 	return (
-		<form className={classes.root} >
+		<Box component='form' className={classes.root} >
 			<TextField
 				fullWidth
 				multiline
@@ -184,9 +184,11 @@ export const ReelConvertArea: FC = () => {
 			<Causion isLegalFormat={isLegalFormat} />
 			<Divider className={classes.divider} />
 			<Result message={convertString} />
-		</form>
+		</Box>
 	);
 };
+
+export default ExcelReelStripsConverter;
 
 const Causion: FC<CausionProps> = ( props: CausionProps ) => {
 	const { isLegalFormat } = props;

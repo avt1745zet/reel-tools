@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
-import { createStyles, Divider, makeStyles } from '@material-ui/core';
-import { DecryptArea } from './DecryptArea';
-import { EncryptArea } from './EncryptArea';
+import { Box, createStyles, Divider, makeStyles } from '@material-ui/core';
+import { DecryptArea } from './components/DecryptArea';
+import { EncryptArea } from './components/EncryptArea';
 
 const useStyles = makeStyles( () =>
 	createStyles( {
@@ -15,13 +15,15 @@ const useStyles = makeStyles( () =>
 	} )
 );
 
-export const JsonCryptor: FC = () => {
+const JsonFormatCryptor: FC = () => {
 	const classes = useStyles();
 	return (
-		<React.Fragment>
+		<Box>
 			<EncryptArea />
 			<Divider className={classes.divider} />
 			<DecryptArea />
-		</React.Fragment>
+		</Box>
 	);
 };
+
+export default JsonFormatCryptor;
