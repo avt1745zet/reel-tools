@@ -46,6 +46,7 @@ const SymbolPayoutGeneratorResult: FC<SymbolPayoutGeneratorResultProps> = ( prop
 				label='NGF format payout setting'
 				fullWidth
 				multiline
+				rows={15}
 				id='symbolPayoutGeneratorResult'
 				value={outputText}
 			/>

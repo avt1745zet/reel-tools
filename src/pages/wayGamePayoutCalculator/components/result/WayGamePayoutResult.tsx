@@ -1,10 +1,11 @@
 import React, { FC } from 'react';
 import { Box, TextField, Typography } from '@material-ui/core';
-import { ISymbolPayoutData, IWinLineData, SymbolType } from '../../../../core/BasicDataInterfaces';
+import { IWinLineData } from '../../../../core/BasicDataInterfaces';
+import { IPayout } from '../../../../core/NGFDataInterfaces';
 
 export interface WayGamePayoutResultProps {
 	reelIndexes: Array<Array<string>>;
-	symbolPayoutMap: Map<string, ISymbolPayoutData>;
+	symbolPayoutMap: Map<string, Array<IPayout>>;
 	bet: number;
 	onBetChange?( newBet: number ): void;
 }
@@ -97,17 +98,17 @@ const WayGamePayoutResult: FC<WayGamePayoutResultProps> = ( props: WayGamePayout
 			/>
 		</Box>
 	);
-}
+};
 
 export default WayGamePayoutResult;
 
-const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<string, ISymbolPayoutData>, bet: number, reelIndex = 0, winSymbol = '', lastLineConfig: Array<Array<number>> = [] ): Array<IWinLineData> => {
+const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<string, Array<IPayout>>, bet: number, reelIndex = 0, winSymbol = '', lastLineConfig: Array<Array<number>> = [] ): Array<IWinLineData> => {
 	let result: Array<IWinLineData> = new Array<IWinLineData>();
 
-	const createWinLine = ( symbolPayoutMap: Map<string, ISymbolPayoutData>, bet: number, symbol: string, winLine: Array<Array<number>>, reelCount: number ): IWinLineData | undefined => {
+	const createWinLine = ( symbolPayoutMap: Map<string, Array<IPayout>>, bet: number, symbol: string, winLine: Array<Array<number>>, reelCount: number ): IWinLineData | undefined => {
 		let result: IWinLineData | undefined = undefined;
 
-		const symbolPayoutData = symbolPayoutMap.get( symbol );
+		const payouts: Array<IPayout> | undefined = symbolPayoutMap.get( symbol );
 		const kinds: number = winLine.length;
 		const lineConfig: Array<Array<number>> = new Array<Array<number>>( reelCount )
 		for ( let reelIndex = 0; reelIndex < lineConfig.length; reelIndex++ ) {
@@ -118,9 +119,10 @@ const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<st
 			}
 		}
 
-		if ( symbolPayoutData && symbolPayoutData.kindMultiplierMap.has( kinds ) ) {
-			if ( kinds >= symbolPayoutData.atleastKind ) {
-				let multiplier: number | undefined = symbolPayoutData.kindMultiplierMap.get( kinds );
+		if ( payouts ) {
+			const payout: IPayout | undefined = payouts.find( payout => payout.num === kinds );
+			if ( payout ) {
+				let multiplier: number = payout.multi;
 				multiplier = multiplier ? multiplier : 0;
 				const prize: number = getPrize( bet, multiplier );
 				result = {
@@ -134,22 +136,12 @@ const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<st
 		return result;
 	};
 
-	const isWildSymbol = ( symbolPayoutMap: Map<string, ISymbolPayoutData>, symbol: string ): boolean => {
-		const result: boolean = getSymbolType( symbolPayoutMap, symbol ) === SymbolType.WILD;
-		return result;
-	}
-
-	const isScatterSymbol = ( symbolPayoutMap: Map<string, ISymbolPayoutData>, symbol: string ): boolean => {
-		const result: boolean = getSymbolType( symbolPayoutMap, symbol ) === SymbolType.SCATTER;
-		return result;
-	}
-
 	let hasAnyWin = false;
 	reelIndexes[ reelIndex ].forEach( ( symbol, symbolIndex ) => {
 		let newWinSymbol = '';
 		if ( reelIndex === 0 ) {
 			newWinSymbol = symbol;
-		} else if ( isWildSymbol( symbolPayoutMap, winSymbol ) && !isWildSymbol( symbolPayoutMap, symbol ) ) {
+		} else if ( winSymbol === 'WILD' && symbol !== 'WILD' ) {
 			//* If previous symbol all wild, newWinSymbol = symbol.
 			newWinSymbol = symbol;
 		} else {
@@ -158,7 +150,7 @@ const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<st
 
 		const isSymbolMatched: boolean = newWinSymbol === symbol;
 
-		if ( ( isSymbolMatched || isWildSymbol( symbolPayoutMap, symbol ) ) && !isScatterSymbol( symbolPayoutMap, symbol ) ) {
+		if ( ( isSymbolMatched || symbol === 'WILD' ) && symbol !== 'SCATTER' ) {
 			hasAnyWin = true;
 			const newLineConfig: Array<Array<number>> = [ ...lastLineConfig, [ symbolIndex ] ];
 			const nextReelIndex: number = reelIndex + 1;
@@ -181,31 +173,20 @@ const getWinLines = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<st
 		}
 	}
 	return result;
-}
-
-const getSymbolType = ( symbolPayoutMap: Map<string, ISymbolPayoutData>, symbol: string ): SymbolType | undefined => {
-	let result: SymbolType | undefined = undefined;
-
-	const symbolPayoutData = symbolPayoutMap.get( symbol );
-	if ( symbolPayoutData ) {
-		result = symbolPayoutData.symbolType;
-	}
-
-	return result;
 };
 
 const getPrize = ( bet: number, multiplier: number ): number => {
 	const result: number = bet * multiplier;
 	return result;
-}
+};
 
-const getScatterWin = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<string, ISymbolPayoutData>, bet: number ): Array<IWinLineData> => {
+const getScatterWin = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<string, Array<IPayout>>, bet: number ): Array<IWinLineData> => {
 	const result: Array<IWinLineData> = new Array<IWinLineData>();
 
-	const createScatterWinLine = ( symbolPayoutMap: Map<string, ISymbolPayoutData>, bet: number, symbol: string, winLine: Array<Array<number>>, reelCount: number ): IWinLineData | undefined => {
+	const createScatterWinLine = ( symbolPayoutMap: Map<string, Array<IPayout>>, bet: number, symbol: string, winLine: Array<Array<number>>, reelCount: number ): IWinLineData | undefined => {
 		let result: IWinLineData | undefined = undefined;
 
-		const symbolPayoutData: ISymbolPayoutData | undefined = symbolPayoutMap.get( symbol );
+		const payouts: Array<IPayout> | undefined = symbolPayoutMap.get( symbol );
 		const kinds: number = winLine.reduce( ( a, b ) => a.concat( b ) ).length;
 		const lineConfig: Array<Array<number>> = new Array<Array<number>>( reelCount )
 		for ( let reelIndex = 0; reelIndex < lineConfig.length; reelIndex++ ) {
@@ -216,9 +197,10 @@ const getScatterWin = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<
 			}
 		}
 
-		if ( symbolPayoutData && symbolPayoutData.kindMultiplierMap.has( kinds ) ) {
-			if ( kinds >= symbolPayoutData.atleastKind ) {
-				let multiplier: number | undefined = symbolPayoutData.kindMultiplierMap.get( kinds );
+		if ( payouts ) {
+			const payout: IPayout | undefined = payouts.find( payout => payout.num === kinds );
+			if ( payout ) {
+				let multiplier: number = payout.multi;
 				multiplier = multiplier ? multiplier : 0;
 				const prize: number = getPrize( bet, multiplier );
 				result = {
@@ -236,7 +218,7 @@ const getScatterWin = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<
 
 	reelIndexes.forEach( ( reel, reelIndex ) => {
 		reel.forEach( ( symbol, symbolIndex ) => {
-			const isScatter: boolean = getSymbolType( symbolPayoutMap, symbol ) === SymbolType.SCATTER;
+			const isScatter: boolean = symbol === 'SCATTER';
 			if ( isScatter ) {
 				let lineConfig: Array<Array<number>> | undefined = scatterWinLineMap.get( symbol );
 				if ( !lineConfig ) {
@@ -259,4 +241,4 @@ const getScatterWin = ( reelIndexes: Array<Array<string>>, symbolPayoutMap: Map<
 	} );
 
 	return result;
-}
+};

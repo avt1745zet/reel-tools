@@ -106,7 +106,9 @@ export const App: FC = () => {
 			<Box className={classes.root}>
 				<HashRouter>
 					<NavMenu isOpen={isMenuOpen} onClick={handleMenuClick} />
-					<Box component='main' className={classes.main} role='main'>
+				</HashRouter>
+				<Box component='main' className={classes.main} role='main'>
+					<HashRouter>
 						<Switch>
 							<Route exact path='/' component={HomePage} />
 							<Route path='/tool/0' component={ExcelReelStripsConverter} />
@@ -116,8 +118,8 @@ export const App: FC = () => {
 							<Route path='/tool/4' component={WayGamePayoutCalculator} />
 							<Route path='*' component={NotFoundPage} />
 						</Switch>
-					</Box>
-				</HashRouter>
+					</HashRouter>
+				</Box>
 			</Box>
 		</ThemeProvider>
 	);
@@ -150,7 +152,7 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 		<Tab key='0' label='Convertor' />,
 		<Tab key='1' label='Crypto' />,
 		<Tab key='2' label='RNG Tool' />,
-		<Tab key='3' label='Symbol Payout Generator' />,
+		<Tab key='3' label='NGF Symbol Payout Generator' />,
 		<Tab key='4' label='Way Game Payout Calculator' />
 	];
 
