@@ -15,6 +15,9 @@ const SymbolPayoutGeneratorResult: FC<SymbolPayoutGeneratorResultProps> = ( prop
 
 	symbolPayoutMap.forEach( ( payoutData, symbol ) => {
 		const kindsMultiplierArray: Array<Array<number>> = Array.from( payoutData.kindMultiplierMap.entries() );
+		//* Sort array by num (kind).
+		kindsMultiplierArray.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+
 		const value: Array<IPayout> = kindsMultiplierArray.map( kindsMultiplier => {
 			return {
 				num: kindsMultiplier[ 0 ],
