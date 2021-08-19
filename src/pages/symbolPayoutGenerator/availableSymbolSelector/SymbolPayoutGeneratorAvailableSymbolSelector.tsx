@@ -1,4 +1,5 @@
 import React, { ChangeEvent, FC, ReactElement } from 'react';
+import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 import { Box, Checkbox, createStyles, Fab, FormControl, FormControlLabel, FormControlProps, FormGroup, Grid, makeStyles, Paper, TextField, Tooltip } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import { ISymbolPayoutData } from '../../../core/BasicDataInterfaces';
@@ -37,7 +38,7 @@ const useStyles = makeStyles( () =>
 const SymbolPayoutGeneratorAvailableSymbolSelector: FC<SymbolPayoutGeneratorAvailableSymbolSelectorProps> = ( props: SymbolPayoutGeneratorAvailableSymbolSelectorProps ) => {
 	const { originalOptionList, customOptionList, onOriginalOptionDataChange, onCustomOptionDataChange, onAddNewCustomOption, reelCount, ...other } = props;
 
-	const classes = useStyles();
+	const classes: ClassNameMap = useStyles();
 
 	const originalOptions: Array<ReactElement> = originalOptionList.map( ( optionData, optionIndex ) => {
 		const handleCheckboxChange = ( index: number ) => ( event: ChangeEvent<HTMLInputElement>, checked: boolean ) => {
@@ -48,17 +49,32 @@ const SymbolPayoutGeneratorAvailableSymbolSelector: FC<SymbolPayoutGeneratorAvai
 		};
 
 		const handleAtleastKindChange = ( index: number ) => ( event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-			const newAtleastKind = Number.parseInt( event.target.value );
-			const isVaild = newAtleastKind >= 1 && newAtleastKind <= reelCount;
-			if ( isVaild ) {
-				onOriginalOptionDataChange( index, {
-					...optionData,
-					payoutData: {
-						...optionData.payoutData,
-						atleastKind: newAtleastKind
-					}
-				} );
+			let newAtleastKind = Number.parseInt( event.target.value );
+			newAtleastKind = newAtleastKind < 1 ? 1 : newAtleastKind;
+			newAtleastKind = newAtleastKind > reelCount ? reelCount : newAtleastKind;
+
+			const lastAtleastKind: number = optionData.payoutData.atleastKind;
+			const newKindMultiplierMap: Map<number, number> = new Map<number, number>( optionData.payoutData.kindMultiplierMap );
+
+			let lastKindMultiplier: number | undefined = optionData.payoutData.kindMultiplierMap.get( lastAtleastKind );
+			lastKindMultiplier = lastKindMultiplier ? lastKindMultiplier : 0;
+
+			for ( let kinds = lastAtleastKind; kinds < newAtleastKind; kinds++ ) {
+				newKindMultiplierMap.delete( kinds );
 			}
+			for ( let kinds = ( lastAtleastKind - 1 ); kinds >= newAtleastKind; kinds-- ) {
+				if ( kinds <= reelCount )
+					newKindMultiplierMap.set( kinds, lastKindMultiplier );
+			}
+
+			onOriginalOptionDataChange( index, {
+				...optionData,
+				payoutData: {
+					...optionData.payoutData,
+					atleastKind: newAtleastKind,
+					kindMultiplierMap: newKindMultiplierMap
+				}
+			} );
 		};
 
 		const handleMultiplierChange = ( index: number, kinds: number ) => ( newMultiplier: number ) => {
@@ -137,17 +153,32 @@ const SymbolPayoutGeneratorAvailableSymbolSelector: FC<SymbolPayoutGeneratorAvai
 		};
 
 		const handleAtleastKindChange = ( index: number ) => ( event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ) => {
-			const newAtleastKind = Number.parseInt( event.target.value );
-			const isVaild = newAtleastKind >= 1 && newAtleastKind <= reelCount;
-			if ( isVaild ) {
-				onCustomOptionDataChange( index, {
-					...optionData,
-					payoutData: {
-						...optionData.payoutData,
-						atleastKind: newAtleastKind
-					}
-				} );
+			let newAtleastKind = Number.parseInt( event.target.value );
+			newAtleastKind = newAtleastKind < 1 ? 1 : newAtleastKind;
+			newAtleastKind = newAtleastKind > reelCount ? reelCount : newAtleastKind;
+
+			const lastAtleastKind: number = optionData.payoutData.atleastKind;
+			const newKindMultiplierMap: Map<number, number> = new Map<number, number>( optionData.payoutData.kindMultiplierMap );
+
+			let lastKindMultiplier: number | undefined = optionData.payoutData.kindMultiplierMap.get( lastAtleastKind );
+			lastKindMultiplier = lastKindMultiplier ? lastKindMultiplier : 0;
+
+			for ( let kinds = lastAtleastKind; kinds < newAtleastKind; kinds++ ) {
+				newKindMultiplierMap.delete( kinds );
 			}
+			for ( let kinds = ( lastAtleastKind - 1 ); kinds >= newAtleastKind; kinds-- ) {
+				if ( kinds <= reelCount )
+					newKindMultiplierMap.set( kinds, lastKindMultiplier );
+			}
+
+			onCustomOptionDataChange( index, {
+				...optionData,
+				payoutData: {
+					...optionData.payoutData,
+					atleastKind: newAtleastKind,
+					kindMultiplierMap: newKindMultiplierMap
+				}
+			} );
 		};
 
 		const handleMultiplierChange = ( index: number, kinds: number ) => ( newMultiplier: number ) => {
