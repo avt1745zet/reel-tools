@@ -1,9 +1,12 @@
-import React, { FC, useState } from 'react';
-import { Box, createStyles, makeStyles, TextField } from '@material-ui/core';
+import React, { FC, useState, useCallback } from 'react';
+import { Box, createStyles, Fab, makeStyles, TextField, Tooltip } from '@material-ui/core';
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
-import { ISymbolPayoutData } from '../../core/BasicDataInterfaces';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import { IPayout } from '../../core/NGFDataInterfaces';
+import { ISymbolPayoutData, SymbolType } from '../../core/BasicDataInterfaces';
 import { default as AvailableSymbolSelector, ISymbolOptionData } from './availableSymbolSelector/SymbolPayoutGeneratorAvailableSymbolSelector';
-import { default as Result } from './result/symbolPayoutGeneratorResult';
+import { default as SymbolPayoutTextEditor } from './symbolPayoutTextEditor/SymbolPayoutGeneratorSymbolPayoutTextEditor';
 import { default as Config, ISymbolPayoutGeneratorConfig } from './SymbolPayoutGeneratorConfig';
 
 const useStyles = makeStyles( () =>
@@ -22,8 +25,8 @@ const config: ISymbolPayoutGeneratorConfig = Config;
 export const SymbolPayoutGenerator: FC = () => {
 	const [ reelAmount, setReelAmount ] = useState( config.defaultReelAmount );
 
-	const [ originalOptionList, setOriginalOptionList ] = useState(
-		config.defaultOriginalOptionList.map( option => ( {
+	const [ optionList, setOptionList ] = useState(
+		config.defaultOptionList.map( option => ( {
 			...option,
 			payoutData: {
 				...option.payoutData,
@@ -32,9 +35,9 @@ export const SymbolPayoutGenerator: FC = () => {
 		} as ISymbolOptionData ) )
 	);
 
-	const [ customOptionList, setCustomOptionList ] = useState( [ config.defaultCustomOptionData ] );
+	const [ availableSymbolPayoutMap, setAvailableSymbolPayoutMap ] = useState( getCheckedOptionsData( config.defaultOptionList ) );
 
-	const [ availableSymbolPayoutMap, setAvailableSymbolPayoutMap ] = useState( getCheckedOptionDatas( config.defaultOriginalOptionList ) );
+	const [ symbolPayoutText, setSymbolPayoutText ] = useState( '' );
 
 	const handleReelAmountChange = ( event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> ): void => {
 		const value: string = event.target.value;
@@ -47,8 +50,8 @@ export const SymbolPayoutGenerator: FC = () => {
 
 		const lastReelAmount: number = reelAmount;
 
-		let newOriginalOptionList: Array<ISymbolOptionData> = originalOptionList.slice();
-		newOriginalOptionList = newOriginalOptionList.map( option => {
+		let newOptionList: Array<ISymbolOptionData> = optionList.slice();
+		newOptionList = newOptionList.map( option => {
 			let lastKindMultiplier: number | undefined = option.payoutData.kindMultiplierMap.get( lastReelAmount );
 			lastKindMultiplier = lastKindMultiplier ? lastKindMultiplier : 0;
 			for ( let kinds = lastReelAmount + 1; kinds <= newReelAmount; kinds++ ) {
@@ -61,64 +64,59 @@ export const SymbolPayoutGenerator: FC = () => {
 			}
 			return option;
 		} );
-		setOriginalOptionList( newOriginalOptionList );
+		setOptionList( newOptionList );
+	};
 
-		let newCustomOptionList: Array<ISymbolOptionData> = customOptionList.slice();
-		newCustomOptionList = newCustomOptionList.map( option => {
-			let lastKindMultiplier: number | undefined = option.payoutData.kindMultiplierMap.get( lastReelAmount );
-			lastKindMultiplier = lastKindMultiplier ? lastKindMultiplier : 0;
-			for ( let kinds = lastReelAmount + 1; kinds <= newReelAmount; kinds++ ) {
-				if ( kinds >= option.payoutData.atleastKind ) {
-					option.payoutData.kindMultiplierMap.set( kinds, lastKindMultiplier );
-				}
-			}
-			for ( let kinds = lastReelAmount; kinds > newReelAmount; kinds-- ) {
-				option.payoutData.kindMultiplierMap.delete( kinds );
-			}
-			return option;
+	const handleOptionDataChange = ( index: number, data: ISymbolOptionData ) => {
+		setOptionList( optionData => {
+			const newOptionList: Array<ISymbolOptionData> = optionData.slice();
+			newOptionList[ index ] = data;
+			return newOptionList;
 		} );
-		setCustomOptionList( newCustomOptionList );
+	};
 
+	const memoHandleOptionDataChange = useCallback( handleOptionDataChange, [] );
+
+	const handleAddNewOptionButtonClick = () => {
+		const newOptionList: Array<ISymbolOptionData> = optionList.slice();
+		const lastIndex = newOptionList.length - 1;
+
+		newOptionList[ lastIndex ].checked = true;
+		newOptionList.push( config.defaultOptionData );
+		setOptionList( newOptionList );
+	};
+
+	const handleSymbolPayoutTextChange = useCallback( ( text: string ) => {
+		setSymbolPayoutText( text );
+	}, [] )
+
+	const handleConvertToTextButtonClick = () => {
 		const newAvailableSymbolPayoutMap: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>( [
-			...getCheckedOptionDatas( newOriginalOptionList ), ...getCheckedOptionDatas( newCustomOptionList )
+			...getCheckedOptionsData( optionList )
 		] );
 		setAvailableSymbolPayoutMap( newAvailableSymbolPayoutMap );
 	};
 
-	const onOriginalOptionDataChange = ( index: number, optionData: ISymbolOptionData ) => {
-		const newOriginalOptionList: Array<ISymbolOptionData> = originalOptionList.slice();
-		newOriginalOptionList[ index ] = optionData;
-		setOriginalOptionList( newOriginalOptionList );
-
-		const newAvailableSymbolPayoutMap: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>( [
-			...getCheckedOptionDatas( newOriginalOptionList ), ...getCheckedOptionDatas( customOptionList )
-		] );
-		setAvailableSymbolPayoutMap( newAvailableSymbolPayoutMap );
-	};
-
-	const onCustomOptionDataChange = ( index: number, optionData: ISymbolOptionData ) => {
-		const newCustomOptionList: Array<ISymbolOptionData> = customOptionList.slice();
-		newCustomOptionList[ index ] = optionData;
-		setCustomOptionList( newCustomOptionList );
-
-		const newAvailableSymbolPayoutMap: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>( [
-			...getCheckedOptionDatas( originalOptionList ), ...getCheckedOptionDatas( newCustomOptionList )
-		] );
-		setAvailableSymbolPayoutMap( newAvailableSymbolPayoutMap );
-	};
-
-	const onAddNewCustomOption = () => {
-		const newCustomOptionList: Array<ISymbolOptionData> = customOptionList.slice();
-		const lastIndex = newCustomOptionList.length - 1;
-
-		newCustomOptionList[ lastIndex ].checked = true;
-		newCustomOptionList.push( config.defaultCustomOptionData );
-		setCustomOptionList( newCustomOptionList );
-
-		const newAvailableSymbolPayoutMap: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>( [
-			...getCheckedOptionDatas( originalOptionList ), ...getCheckedOptionDatas( newCustomOptionList )
-		] );
-		setAvailableSymbolPayoutMap( newAvailableSymbolPayoutMap );
+	const handleConvertToSettingButtonClick = () => {
+		try {
+			const map: Map<string, Array<IPayout>> = convertTextToSymbolPayoutMap( symbolPayoutText );
+			const newOptionList: Array<ISymbolOptionData> = [];
+			map.forEach( ( payouts, symbol ) => {
+				const atleastKind: number = payouts.length > 0 ? payouts.sort( ( a, b ) => a.num - b.num )[ 0 ].num : reelAmount + 1;
+				newOptionList.push( {
+					symbol: symbol,
+					payoutData: {
+						atleastKind: atleastKind,
+						kindMultiplierMap: new Map<number, number>( payouts.map( ( v ) => [ v.num, v.multi ] ) ),
+						symbolType: SymbolType.NORMAL
+					},
+					checked: true
+				} );
+			} );
+			setOptionList( newOptionList );
+		} catch {
+			alert( 'Symbol payout text format is worng, Please double check it :)' );
+		}
 	};
 
 	const classes: ClassNameMap = useStyles();
@@ -136,16 +134,32 @@ export const SymbolPayoutGenerator: FC = () => {
 				onChange={handleReelAmountChange}
 			/>
 			<AvailableSymbolSelector
-				originalOptionList={originalOptionList}
-				customOptionList={customOptionList}
-				onOriginalOptionDataChange={onOriginalOptionDataChange}
-				onCustomOptionDataChange={onCustomOptionDataChange}
-				onAddNewCustomOption={onAddNewCustomOption}
+				optionList={optionList}
+				onOptionDataChange={memoHandleOptionDataChange}
+				onAddNewOption={handleAddNewOptionButtonClick}
 				reelCount={reelAmount}
 				className={classes.symbolSelector}
 			/>
-			<Result
+			<Box textAlign='center' marginY={2}>
+				<Box display='inline-block' marginX={2}>
+					<Tooltip title='Convert to text'>
+						<Fab color='primary' onClick={handleConvertToTextButtonClick} >
+							<ArrowDownwardIcon />
+						</Fab>
+					</Tooltip>
+				</Box>
+				<Box display='inline-block' marginX={2}>
+					<Tooltip title='Convert to setting'>
+						<Fab
+							color='secondary' onClick={handleConvertToSettingButtonClick}>
+							<ArrowUpwardIcon />
+						</Fab>
+					</Tooltip>
+				</Box>
+			</Box>
+			<SymbolPayoutTextEditor
 				symbolPayoutMap={availableSymbolPayoutMap}
+				onTextChange={handleSymbolPayoutTextChange}
 			/>
 		</Box>
 	);
@@ -153,10 +167,34 @@ export const SymbolPayoutGenerator: FC = () => {
 
 export default SymbolPayoutGenerator;
 
-function getCheckedOptionDatas ( options: Array<ISymbolOptionData> ): Map<string, ISymbolPayoutData> {
+function getCheckedOptionsData ( options: Array<ISymbolOptionData> ): Map<string, ISymbolPayoutData> {
 	const checkedOptions: Array<ISymbolOptionData> = options.filter( option => option.checked === true );
 	const result: Map<string, ISymbolPayoutData> = new Map<string, ISymbolPayoutData>(
 		checkedOptions.map( option => [ option.symbol, option.payoutData ] )
 	);
 	return result;
 }
+
+const convertTextToSymbolPayoutMap = ( input: string ): Map<string, Array<IPayout>> => {
+	let iteratorText: string = input;
+	iteratorText = iteratorText.replaceAll( "'", '"' );
+
+	let searchIndex = 0;
+	while ( true ) {
+		const colonIndex: number = iteratorText.indexOf( ':', searchIndex );
+		const lastSpaceIndex: number = iteratorText.lastIndexOf( ' ', colonIndex );
+		if ( colonIndex !== -1 ) {
+			iteratorText = iteratorText.substring( 0, lastSpaceIndex + 1 ) + '"' + iteratorText.substring( lastSpaceIndex + 1 );
+			iteratorText = iteratorText.substring( 0, colonIndex + 1 ) + '"' + iteratorText.substring( colonIndex + 1 );
+			searchIndex = colonIndex + 3;
+		} else {
+			break;
+		}
+	}
+
+	const iterator: Iterable<[ string, Array<IPayout> ]> = JSON.parse( iteratorText );
+
+	const result: Map<string, Array<IPayout>> = new Map<string, Array<IPayout>>( iterator )
+
+	return result;
+};
