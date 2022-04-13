@@ -148,7 +148,8 @@ const ExcelReelStripsConverter: FC = () => {
 			<TextField
 				fullWidth
 				multiline
-				rows={15}
+				minRows={15}
+				maxRows={15}
 				InputLabelProps={{
 					shrink: true,
 				}}
@@ -215,7 +216,8 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 			<TextField
 				fullWidth
 				multiline
-				rows={15}
+				minRows={15}
+				maxRows={15}
 				inputProps={{ readOnly: true }}
 				label='Convert result'
 				value={message}

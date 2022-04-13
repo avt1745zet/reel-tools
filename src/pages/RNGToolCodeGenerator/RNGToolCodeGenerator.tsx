@@ -282,7 +282,8 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 			<TextField
 				fullWidth
 				multiline
-				rows={15}
+				minRows={15}
+				maxRows={15}
 				inputProps={{ readOnly: true }}
 				variant='filled'
 				label='Output result'

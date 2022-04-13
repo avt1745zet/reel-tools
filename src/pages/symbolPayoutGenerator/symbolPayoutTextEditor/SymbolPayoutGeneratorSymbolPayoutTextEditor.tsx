@@ -67,7 +67,8 @@ const SymbolPayoutGeneratorSymbolPayoutTextEditor: FC<SymbolPayoutGeneratorResul
 				label='NGF format symbol payout text'
 				fullWidth
 				multiline
-				rows={15}
+				minRows={15}
+				maxRows={15}
 				id='symbolPayoutGenerator-SymbolPayoutTextEditor-TextField'
 				value={outputText}
 				onChange={handleTextFieldChange}
