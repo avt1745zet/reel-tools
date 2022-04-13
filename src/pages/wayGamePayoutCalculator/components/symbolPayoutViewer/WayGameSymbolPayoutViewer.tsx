@@ -1,7 +1,7 @@
 import React, { FC, ReactElement } from 'react';
 import { Box, createStyles, FormGroup, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
 import { CommonProps, OverridableTypeMap } from '@material-ui/core/OverridableComponent';
-import { IPayout } from '../../../../core/NGFDataInterfaces';
+import { IPayout } from '../../../../core/SlotGameDataInterfaces';
 
 export interface SymbolPayoutViewerProps extends CommonProps<OverridableTypeMap> {
 	symbolPayoutsMap: Map<string, Array<IPayout>>;

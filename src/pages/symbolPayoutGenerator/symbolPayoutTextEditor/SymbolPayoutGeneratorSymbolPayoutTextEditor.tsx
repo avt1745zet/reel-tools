@@ -1,7 +1,7 @@
 import React, { ChangeEvent, FC, useState, useEffect } from 'react';
 import { Box, TextField } from '@material-ui/core';
 import { ISymbolPayoutData } from '../../../core/BasicDataInterfaces';
-import { IPayout } from '../../../core/NGFDataInterfaces';
+import { IPayout } from '../../../core/SlotGameDataInterfaces';
 import { CopyButton } from '../../../components/buttons/CopyButton';
 
 export interface SymbolPayoutGeneratorResultProps {
@@ -15,7 +15,7 @@ const SymbolPayoutGeneratorSymbolPayoutTextEditor: FC<SymbolPayoutGeneratorResul
 	const [ outputText, setOutputText ] = useState( '' );
 
 	useEffect( () => {
-		const ngfFormatSymbolPayoutsMap: Map<string, Array<IPayout>> = new Map<string, Array<IPayout>>();
+		const slotGameFormatSymbolPayoutsMap: Map<string, Array<IPayout>> = new Map<string, Array<IPayout>>();
 
 		symbolPayoutMap.forEach( ( payoutData, symbol ) => {
 			const kindsMultiplierArray: Array<Array<number>> = Array.from( payoutData.kindMultiplierMap.entries() );
@@ -28,20 +28,20 @@ const SymbolPayoutGeneratorSymbolPayoutTextEditor: FC<SymbolPayoutGeneratorResul
 					multi: kindsMultiplier[ 1 ]
 				}
 			} )
-			ngfFormatSymbolPayoutsMap.set( symbol, value );
+			slotGameFormatSymbolPayoutsMap.set( symbol, value );
 		} );
 
 		let index = 0;
 		let newOutputText = '[\n';
 
-		ngfFormatSymbolPayoutsMap.forEach( ( payouts, symbol ) => {
+		slotGameFormatSymbolPayoutsMap.forEach( ( payouts, symbol ) => {
 			newOutputText += `[\n'${ symbol }', \n[\n`
 			payouts.forEach( ( payout, index ) => {
 				newOutputText += `{ num: ${ payout.num }, multi: ${ payout.multi } }`
 				newOutputText = index < payouts.length - 1 ? newOutputText + ',\n' : newOutputText;
 			} );
 			newOutputText += '\n]\n]';
-			newOutputText = index < ngfFormatSymbolPayoutsMap.size - 1 ? newOutputText + ',\n' : newOutputText;
+			newOutputText = index < slotGameFormatSymbolPayoutsMap.size - 1 ? newOutputText + ',\n' : newOutputText;
 			index += 1;
 		} );
 		newOutputText += '\n]';
@@ -64,7 +64,6 @@ const SymbolPayoutGeneratorSymbolPayoutTextEditor: FC<SymbolPayoutGeneratorResul
 		<Box>
 			<TextField
 				variant='filled'
-				label='NGF format symbol payout text'
 				fullWidth
 				multiline
 				minRows={15}

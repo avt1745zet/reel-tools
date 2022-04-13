@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Box, TextField, Typography } from '@material-ui/core';
 import { IWinLineData } from '../../../../core/BasicDataInterfaces';
-import { IPayout } from '../../../../core/NGFDataInterfaces';
+import { IPayout } from '../../../../core/SlotGameDataInterfaces';
 
 export interface WayGamePayoutResultProps {
 	reelIndexes: Array<Array<string>>;
