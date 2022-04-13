@@ -6,7 +6,7 @@ import { HashRouter, Route, Switch, useHistory } from 'react-router-dom';
 import HomePage from './pages/home/HomePage';
 import ExcelReelStripsConverter from './pages/excelReelStripsConverter/ExcelReelStripsConverter';
 import JsonFormatCryptor from './pages/jsonFormatCryptor/JsonFormatCryptor';
-import RNGToolCodeGenerator from './pages/RNGToolCodeGenerator/RNGToolCodeGenerator';
+import ForceSpinCodeGenerator from './pages/forceSpinCodeGenerator/ForceSpinCodeGenerator';
 import SymbolPayoutGenerator from './pages/symbolPayoutGenerator/SymbolPayoutGenerator';
 import WayGamePayoutCalculator from './pages/wayGamePayoutCalculator/WayGamePayoutCalculator';
 import NotFoundPage from './pages/notFound/notFoundPage';
@@ -113,7 +113,7 @@ export const App: FC = () => {
 							<Route exact path='/' component={HomePage} />
 							<Route path='/tool/0' component={ExcelReelStripsConverter} />
 							<Route path='/tool/1' component={JsonFormatCryptor} />
-							<Route path='/tool/2' component={RNGToolCodeGenerator} />
+							<Route path='/tool/2' component={ForceSpinCodeGenerator} />
 							<Route path='/tool/3' component={SymbolPayoutGenerator} />
 							<Route path='/tool/4' component={WayGamePayoutCalculator} />
 							<Route path='*' component={NotFoundPage} />
@@ -151,8 +151,8 @@ export const NavMenu: FC<NavMenuProps> = ( props: NavMenuProps ) => {
 	const tabElements: Array<ReactElement> = [
 		<Tab key='0' label='Convertor' />,
 		<Tab key='1' label='Crypto' />,
-		<Tab key='2' label='RNG Tool' />,
-		<Tab key='3' label='NGF Symbol Payout Generator' />,
+		<Tab key='2' label='Force-Spin Tool' />,
+		<Tab key='3' label='Symbol Payout Generator' />,
 		<Tab key='4' label='Way Game Payout Calculator' />
 	];
 

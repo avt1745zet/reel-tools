@@ -4,7 +4,7 @@ import SlotSetting from '../../components/slotSetting/SlotSetting';
 import { default as SymbolPayoutViewer } from './components/symbolPayoutViewer/WayGameSymbolPayoutViewer';
 import { default as Result } from './components/result/WayGamePayoutResult';
 import { default as Config, IWayGamePayoutCalculatorConfig } from './WayGamePayoutCalculatorConfig';
-import { IPayout } from '../../core/NGFDataInterfaces';
+import { IPayout } from '../../core/SlotGameDataInterfaces';
 
 const useStyles = makeStyles( () =>
 	createStyles( {
@@ -78,7 +78,7 @@ const WayGamePayoutCalculator: FC = () => {
 		<Box component='form' className={classes.root}>
 			<TextField
 				fullWidth
-				label={'Input NGF format payout...'}
+				label={'Input correct format payout...'}
 				onChange={handleInputChange}
 			/>
 			<Causion isLegalFormat={isLegalFormat} />

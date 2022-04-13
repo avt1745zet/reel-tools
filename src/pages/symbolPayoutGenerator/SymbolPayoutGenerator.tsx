@@ -3,7 +3,7 @@ import { Box, createStyles, Fab, makeStyles, TextField, Tooltip } from '@materia
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import { IPayout } from '../../core/NGFDataInterfaces';
+import { IPayout } from '../../core/SlotGameDataInterfaces';
 import { ISymbolPayoutData, SymbolType } from '../../core/BasicDataInterfaces';
 import { default as AvailableSymbolSelector, ISymbolOptionData } from './availableSymbolSelector/SymbolPayoutGeneratorAvailableSymbolSelector';
 import { default as SymbolPayoutTextEditor } from './symbolPayoutTextEditor/SymbolPayoutGeneratorSymbolPayoutTextEditor';
