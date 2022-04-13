@@ -3,13 +3,13 @@ import { ISymbolOptionData } from './availableSymbolSelector/SymbolPayoutGenerat
 
 export interface ISymbolPayoutGeneratorConfig {
 	defaultReelAmount: number;
-	defaultSelectOptionList: Array<ISymbolOptionData>;
-	defaultCustomOptionData: ISymbolOptionData;
+	defaultOptionList: Array<ISymbolOptionData>;
+	defaultOptionData: ISymbolOptionData;
 }
 
 const SymbolPayoutGeneratorConfig: ISymbolPayoutGeneratorConfig = {
 	defaultReelAmount: 5,
-	defaultSelectOptionList: [
+	defaultOptionList: [
 		{
 			symbol: 'PIC1',
 			checked: true,
@@ -195,7 +195,7 @@ const SymbolPayoutGeneratorConfig: ISymbolPayoutGeneratorConfig = {
 			}
 		}
 	],
-	defaultCustomOptionData: {
+	defaultOptionData: {
 		symbol: '',
 		checked: false,
 		payoutData: {

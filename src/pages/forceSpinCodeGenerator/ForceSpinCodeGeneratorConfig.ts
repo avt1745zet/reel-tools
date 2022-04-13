@@ -1,13 +1,13 @@
-import { ISelectStatu } from './RNGToolCodeGenerator';
+import { ISelectStatu } from './ForceSpinCodeGenerator';
 
-export interface IRNGToolCodeGeneratorConfig {
+export interface IForceSpinCodeGeneratorConfig {
 	defaultReelAmount: number;
 	defaultSymbolAmount: number;
 	defaultSelectIndex: number;
 	defaultSelectOptionList: Array<ISelectStatu>;
 }
 
-const WayGamePayoutCalculatorConfig: IRNGToolCodeGeneratorConfig = {
+const forceSpinCodeGeneratorConfig: IForceSpinCodeGeneratorConfig = {
 	defaultReelAmount: 5,
 	defaultSymbolAmount: 4,
 
@@ -72,4 +72,4 @@ const WayGamePayoutCalculatorConfig: IRNGToolCodeGeneratorConfig = {
 	]
 }
 
-export default WayGamePayoutCalculatorConfig;
+export default forceSpinCodeGeneratorConfig;

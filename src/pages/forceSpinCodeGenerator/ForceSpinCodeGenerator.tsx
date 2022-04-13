@@ -3,7 +3,7 @@ import { Checkbox, FormControlLabel, IconButton, Box, createStyles, Grid, makeSt
 import AddIcon from '@material-ui/icons/Add';
 import { CopyButton } from '../../components/buttons/CopyButton';
 import SlotSettingList from '../../components/slotSettingList/SlotSettingList';
-import { default as Config, IRNGToolCodeGeneratorConfig } from './RNGToolCodeGeneratorConfig';
+import Config, { IForceSpinCodeGeneratorConfig } from './ForceSpinCodeGeneratorConfig';
 
 interface AvailableSymbolSelectorPanelProps {
 	originalSelectOptionList: Array<ISelectStatu>;
@@ -40,9 +40,9 @@ const useStyles = makeStyles( () =>
 	} )
 );
 
-const config: IRNGToolCodeGeneratorConfig = Config;
+const config: IForceSpinCodeGeneratorConfig = Config;
 
-const RNGToolCodeGenerator: FC = () => {
+const ForceSpinCodeGenerator: FC = () => {
 	const classes = useStyles();
 
 	const [ originalSelectOptionList, setOriginalSelectOptionList ] = useState( config.defaultSelectOptionList );
@@ -149,7 +149,7 @@ const RNGToolCodeGenerator: FC = () => {
 	);
 };
 
-export default RNGToolCodeGenerator;
+export default ForceSpinCodeGenerator;
 
 function getCheckedSymbol ( options: Array<ISelectStatu> ): Array<string> {
 	const result: Array<string> = options.filter( option => option.checked === true ).map( option => option.symbol );
@@ -250,7 +250,7 @@ const AvailableSymbolSelectorPanel: FC<AvailableSymbolSelectorPanelProps> = ( pr
 const Result: FC<ResultProps> = ( props: ResultProps ) => {
 	const { reelIndexesList } = props;
 
-	let code = 'rngTool.setRngSpinData([\n';
+	let code = 'forceSpinTool.setSpinData([\n';
 
 	reelIndexesList.forEach( ( reelIndexes, index ) => {
 		let reelIndexesText = '[\n';
@@ -282,11 +282,12 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 			<TextField
 				fullWidth
 				multiline
-				rows={15}
+				minRows={15}
+				maxRows={15}
 				inputProps={{ readOnly: true }}
 				variant='filled'
 				label='Output result'
-				id='rngToolResult'
+				id='forceSpinToolResult'
 				value={code}
 			/>
 			<CopyButton
@@ -296,7 +297,7 @@ const Result: FC<ResultProps> = ( props: ResultProps ) => {
 					color: 'primary',
 					variant: 'contained'
 				}}
-				targetElementId='rngToolResult'
+				targetElementId='forceSpinToolResult'
 			>
 				Copy result
 			</CopyButton>

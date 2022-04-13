@@ -10,9 +10,8 @@ interface CopyButtonProps {
 
 export const CopyButton: FC<CopyButtonProps> = ( props: CopyButtonProps ) => {
 	const handleClick = () => {
-		const copyText: HTMLInputElement = document.getElementById( props.targetElementId ) as HTMLInputElement;
-		copyText.select();
-		document.execCommand( 'copy' );
+		const copyText: string = (document.getElementById( props.targetElementId ) as HTMLInputElement).value;
+		navigator.clipboard.writeText(copyText);
 	};
 	return props.children
 		?
