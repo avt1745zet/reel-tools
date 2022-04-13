@@ -47,7 +47,8 @@ export const EncryptArea: FC = () => {
 		<TextField
 			fullWidth
 			multiline
-			rows={16}
+			minRows={16}
+			maxRows={16}
 			InputLabelProps={{
 				shrink: true,
 			}}
